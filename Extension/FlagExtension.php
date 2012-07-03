@@ -88,7 +88,7 @@ class FlagExtension extends \Twig_Extension
      */
     public function getTests()
     {
-        return array('assetvisible' => new \Twig_Function_Method($this, 'isAssetVisible'));
+        return array('assetvisible' => new \Twig_Test_Method($this, 'isAssetVisible'));
     }
 
     /**
