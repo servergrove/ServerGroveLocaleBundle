@@ -25,22 +25,22 @@ class ServerGroveLocaleExtension extends Extension
         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
 
-        $container->setParameter('servergrove_locale.hide_current_locale', $config['hide_current_locale']);
-        $container->setParameter('servergrove_locale.template', $config['template']);
-        $container->setParameter('servergrove_locale.flags_path', $config['flags_path']);
+        $container->setParameter('server_grove_locale.hide_current_locale', $config['hide_current_locale']);
+        $container->setParameter('server_grove_locale.template', $config['template']);
+        $container->setParameter('server_grove_locale.flags_path', $config['flags_path']);
 
         if (count($config['domains']) > 0 && !isset($config['domains']['default'])) {
             throw new \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException('A default domain must be configured');
         }
-        $container->setParameter('servergrove_locale.domains', $config['domains']);
+        $container->setParameter('server_grove_locale.domains', $config['domains']);
 
-        $container->setParameter('servergrove_locale.flag.loader.class', $config['loader']['class']);
+        $container->setParameter('server_grove_locale.flag.loader.class', $config['loader']['class']);
         foreach ($config['loader']['arguments'] as $argument) {
-            $container->getDefinition('servergrove_locale.flag.loader')->addArgument($argument);
+            $container->getDefinition('server_grove_locale.flag.loader')->addArgument($argument);
         }
 
         if ($config['cache_warmer']['enabled']) {
-            $container->setDefinition('servergrove_locale.flag_cache_warmer', new CacheWarmerDefinition(
+            $container->setDefinition('server_grove_locale.flag_cache_warmer', new CacheWarmerDefinition(
                 $config['flags_path'],
                 $config['cache_warmer']['patterns'],
                 $config['cache_warmer']['defaults']

@@ -24,7 +24,7 @@ class CacheWarmerDefinition extends Definition
         parent::__construct();
 
         $this
-            ->setClass('%servergrove_locale.flag_cache_warmer.class%')
+            ->setClass('%server_grove_locale.flag_cache_warmer.class%')
             ->setPublic(false)
             ->addArgument('%kernel.root_dir%')
             ->addArgument($flagsPath)

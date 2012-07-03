@@ -20,7 +20,7 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $rootNode    = $treeBuilder->root('servergrove_locale');
+        $rootNode    = $treeBuilder->root('server_grove_locale');
 
         $this->configureFlagsPath($rootNode);
         $this->configureHiddenLocales($rootNode);
