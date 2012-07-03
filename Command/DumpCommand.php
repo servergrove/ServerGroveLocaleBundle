@@ -28,7 +28,7 @@ class DumpCommand extends ContainerAwareCommand
         $kernel = $this->getContainer()->get('kernel');
 
         /** @var $factory \ServerGrove\LocaleBundle\Asset\Factory\AssetFactory */
-        $factory = $this->getContainer()->get('servergrove_locale.asset_factory');
+        $factory = $this->getContainer()->get('server_grove_locale.asset_factory');
 
         /** @var $writer AssetWriter */
         $writer = new AssetWriter(dirname($kernel->getRootDir()).'/web');

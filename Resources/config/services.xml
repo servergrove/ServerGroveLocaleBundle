@@ -6,35 +6,35 @@
 
 
     <parameters>
-        <parameter key="servergrove_locale.asset_factory.class">ServerGrove\LocaleBundle\Asset\Factory\AssetFactory</parameter>
-        <parameter key="servergrove_locale.flag_cache_warmer.class">ServerGrove\LocaleBundle\CacheWarmer\FlagCacheWarmer</parameter>
-        <parameter key="servergrove_locale.flag_extension.class">ServerGrove\LocaleBundle\Extension\FlagExtension</parameter>
-        <parameter key="servergrove_locale.flag_extension_factory.class">ServerGrove\LocaleBundle\Extension\FlagExtensionFactory</parameter>
+        <parameter key="server_grove_locale.asset_factory.class">ServerGrove\LocaleBundle\Asset\Factory\AssetFactory</parameter>
+        <parameter key="server_grove_locale.flag_cache_warmer.class">ServerGrove\LocaleBundle\CacheWarmer\FlagCacheWarmer</parameter>
+        <parameter key="server_grove_locale.flag_extension.class">ServerGrove\LocaleBundle\Extension\FlagExtension</parameter>
+        <parameter key="server_grove_locale.flag_extension_factory.class">ServerGrove\LocaleBundle\Extension\FlagExtensionFactory</parameter>
     </parameters>
 
     <services>
-        <service id="servergrove_locale.flag.loader" class="%servergrove_locale.flag.loader.class%"/>
+        <service id="server_grove_locale.flag.loader" class="%server_grove_locale.flag.loader.class%"/>
 
-        <service id="servergrove_locale.asset_factory" class="%servergrove_locale.asset_factory.class%">
-            <argument type="service" id="servergrove_locale.flag.loader"/>
-            <argument>%servergrove_locale.flags_path%</argument>
+        <service id="server_grove_locale.asset_factory" class="%server_grove_locale.asset_factory.class%">
+            <argument type="service" id="server_grove_locale.flag.loader"/>
+            <argument>%server_grove_locale.flags_path%</argument>
             <argument>%kernel.debug%</argument>
             <call method="load"/>
         </service>
 
-        <service id="servergrove_locale.flag_extension_factory" class="%servergrove_locale.flag_extension_factory.class%">
+        <service id="server_grove_locale.flag_extension_factory" class="%server_grove_locale.flag_extension_factory.class%">
             <argument type="service" id="service_container"/>
-            <argument>%servergrove_locale.hide_current_locale%</argument>
+            <argument>%server_grove_locale.hide_current_locale%</argument>
         </service>
 
-        <service id="servergrove_locale.flag_extension"
-                 class="%servergrove_locale.flag_extension.class%"
-                 factory-service="servergrove_locale.flag_extension_factory"
+        <service id="server_grove_locale.flag_extension"
+                 class="%server_grove_locale.flag_extension.class%"
+                 factory-service="server_grove_locale.flag_extension_factory"
                  factory-method="get"
                  public="false">
-            <argument type="service" id="servergrove_locale.asset_factory"/>
-            <argument>%servergrove_locale.template%</argument>
-            <argument>%servergrove_locale.domains%</argument>
+            <argument type="service" id="server_grove_locale.asset_factory"/>
+            <argument>%server_grove_locale.template%</argument>
+            <argument>%server_grove_locale.domains%</argument>
             <tag name="twig.extension"/>
         </service>
     </services>
