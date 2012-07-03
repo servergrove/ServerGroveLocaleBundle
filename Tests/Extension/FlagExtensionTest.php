@@ -94,8 +94,9 @@ class FlagExtensionTest extends \PHPUnit_Framework_TestCase
             'pt'      => 'http://servergrove.com.br'
         ));
 
-        $assert = function($expected, $actual) use ($domains, $extension) {
-            $this->assertEquals($domains[$expected], $extension->getAssetUrl($actual), sprintf('Incorrect behavior when looking url for "%s"', $actual));
+        $test = $this;
+        $assert = function($expected, $actual) use ($domains, $extension, $test) {
+            $test->assertEquals($domains[$expected], $extension->getAssetUrl($actual), sprintf('Incorrect behavior when looking url for "%s"', $actual));
         };
 
         $assert('en', 'en');
