@@ -1,0 +1,43 @@
+{% block flag %}
+{% spaceless %}
+<img src="/{{ asset.getTargetPath() }}"{% for key, value in attrs %} {{ key }}="{{ value }}"{% endfor %}/>
+{% endspaceless %}
+{% endblock%}
+
+{% block flags %}
+{% for asset in flags %}
+{% if asset is assetvisible %}
+{{ asset_flag(asset, attrs) }}
+{% endif %}
+{% endfor %}
+{% endblock %}
+
+{% block path_flag %}
+{% spaceless %}
+{{ url_asset_flag(path(route, route_params|default({})), asset, attrs) }}
+{% endspaceless %}
+{% endblock %}
+
+{% block path_flags %}
+{% for asset in flags %}
+{% if asset is assetvisible %}
+{{ path_asset_flag(route, asset, route_params, attrs) }}
+{% endif %}
+{% endfor %}
+{% endblock %}
+
+{% block linked_flag %}
+{% spaceless %}
+<a href="{{ url }}">
+{{ asset_flag(asset, attrs) }}
+</a>
+{% endspaceless %}
+{% endblock %}
+
+{% block url_flags %}
+{% for asset in flags %}
+{% if asset is assetvisible %}
+{{ url_asset_flag(asset_url(asset), asset, attrs) }}
+{% endif %}
+{% endfor %}
+{% endblock %}

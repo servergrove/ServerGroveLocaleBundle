@@ -1,0 +1,42 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+
+    <parameters>
+        <parameter key="servergrove_locale.asset_factory.class">ServerGrove\LocaleBundle\Asset\Factory\AssetFactory</parameter>
+        <parameter key="servergrove_locale.flag_cache_warmer.class">ServerGrove\LocaleBundle\CacheWarmer\FlagCacheWarmer</parameter>
+        <parameter key="servergrove_locale.flag_extension.class">ServerGrove\LocaleBundle\Extension\FlagExtension</parameter>
+        <parameter key="servergrove_locale.flag_extension_factory.class">ServerGrove\LocaleBundle\Extension\FlagExtensionFactory</parameter>
+    </parameters>
+
+    <services>
+        <service id="servergrove_locale.flag.loader" class="%servergrove_locale.flag.loader.class%"/>
+
+        <service id="servergrove_locale.asset_factory" class="%servergrove_locale.asset_factory.class%">
+            <argument type="service" id="servergrove_locale.flag.loader"/>
+            <argument>%servergrove_locale.flags_path%</argument>
+            <argument>%kernel.debug%</argument>
+            <call method="load"/>
+        </service>
+
+        <service id="servergrove_locale.flag_extension_factory" class="%servergrove_locale.flag_extension_factory.class%">
+            <argument type="service" id="service_container"/>
+            <argument>%servergrove_locale.hide_current_locale%</argument>
+        </service>
+
+        <service id="servergrove_locale.flag_extension"
+                 class="%servergrove_locale.flag_extension.class%"
+                 factory-service="servergrove_locale.flag_extension_factory"
+                 factory-method="get"
+                 public="false">
+            <argument type="service" id="servergrove_locale.asset_factory"/>
+            <argument>%servergrove_locale.template%</argument>
+            <argument>%servergrove_locale.domains%</argument>
+            <tag name="twig.extension"/>
+        </service>
+    </services>
+
+</container>
