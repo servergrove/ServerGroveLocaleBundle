@@ -1,0 +1,18 @@
+{
+    "name": "servergrove/ServerGroveLocaleBundle",
+    "description": "This bundle provides a set of Twig functions to display flags in different ways",
+    "authors": [
+        {
+            "name": "Ismael Ambrosi",
+            "email": "ismael@servergrove.com"
+        }
+    ],
+    "require": {
+        "kriswallsmith/assetic": "v1.0.3",
+        "symfony/framework-bundle": "v2.0.15",
+        "symfony/finder": "v2.0.15",
+        "symfony/filesystem": "*",
+        "symfony/twig-bridge": "v2.0.15",
+        "symfony/console": "v2.0.15"
+    }
+}
