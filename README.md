@@ -3,6 +3,8 @@ ServerGroveLocaleBundle
 
 This bundle provides a set of Twig functions to display flags in different ways.
 
+[![Build Status](https://secure.travis-ci.org/servergrove/ServerGroveLocaleBundle.png?branch=master)](http://travis-ci.org/servergrove/ServerGroveLocaleBundle)
+
 Installation
 ------------
 
