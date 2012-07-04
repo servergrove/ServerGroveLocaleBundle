@@ -197,4 +197,12 @@ class LocaleAsset implements AssetInterface
     {
         return $this->asset->getLastModified();
     }
+
+    /**
+     * @return string
+     */
+    public function getLocaleString()
+    {
+        return $this->getLocale().(is_null($this->getCountry()) ? '' : '-'.$this->getCountry());
+    }
 }
