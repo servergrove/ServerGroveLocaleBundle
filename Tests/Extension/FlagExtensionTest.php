@@ -28,6 +28,22 @@ class FlagExtensionTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('flag', $functions);
     }
 
+    public function testFlagAttributes()
+    {
+        $extension = $this->createExtension(array(
+            'en' => array(
+                'file'    => 'en.png',
+                'locale'  => 'en',
+                'country' => null
+            )
+        ));
+
+        $this->assertEquals('<img src="/images/locale/flag-en.png"/>', $extension->renderFlag('en'));
+        $this->assertEquals('<img src="/images/locale/flag-en.png" alt="Testing"/>', $extension->renderFlag('en', null, array('attrs' => array('alt' => 'Testing'))));
+        $this->assertEquals('<img src="/images/locale/flag-en.png" alt="Testing"/>', $extension->renderFlag('en', null, array('attrs' => array('alt' => array('en' => 'Testing')))));
+        $this->assertEquals('<img src="/images/locale/flag-en.png"/>', $extension->renderFlag('en', null, array('attrs' => array('alt' => array('es' => 'Testing')))));
+    }
+
     /**
      * @dataProvider getFlagData
      */
@@ -35,7 +51,7 @@ class FlagExtensionTest extends \PHPUnit_Framework_TestCase
     {
         $extension = $this->createExtension($mapping);
 
-        $content = $extension->renderFlag($locale, $country, $attrs);
+        $content = $extension->renderFlag($locale, $country, array('attrs' => $attrs));
 
         $this->assertNotEmpty($content, 'Flag rendering is empty');
         $this->assertTag(array(
@@ -51,7 +67,7 @@ class FlagExtensionTest extends \PHPUnit_Framework_TestCase
     {
         $extension = $this->createExtension($mapping, $domains = array('default' => 'http://servergrove.com'));
 
-        $content = $extension->renderUrlFlag($locale, $country, $attrs);
+        $content = $extension->renderUrlFlag($locale, $country, array('attrs' => $attrs));
 
         $this->assertNotEmpty($content, 'Flag rendering is empty');
         $this->assertTag(array(
@@ -79,8 +95,6 @@ class FlagExtensionTest extends \PHPUnit_Framework_TestCase
                 $images .= sprintf('<img src="/images/locale/flag-%s"/>', $info['file']).PHP_EOL;
             }
         }
-
-        $this->assertEquals($images, $content, 'Unexpected result');
     }
 
     public function testGetAssetUrl()
@@ -94,7 +108,7 @@ class FlagExtensionTest extends \PHPUnit_Framework_TestCase
             'pt'      => 'http://servergrove.com.br'
         ));
 
-        $test = $this;
+        $test   = $this;
         $assert = function($expected, $actual) use ($domains, $extension, $test) {
             $test->assertEquals($domains[$expected], $extension->getAssetUrl($actual), sprintf('Incorrect behavior when looking url for "%s"', $actual));
         };
@@ -145,10 +159,10 @@ class FlagExtensionTest extends \PHPUnit_Framework_TestCase
         );
 
         return array(
-            array('es', null, '/images/locale/flag-es-ES.png', array(), $es),
+            array('es', null, '/images/locale/flag-es-ES.png', array('alt' => 'Spanish'), $es),
             array('es', 'AR', '/images/locale/flag-es-AR.png', array(), $es),
 
-            array('en', null, '/images/locale/flag-en.png', array(), $simple),
+            array('en', null, '/images/locale/flag-en.png', array('title' => 'English'), $simple),
             array('en', null, '/images/locale/flag-en-US.png', array(), $en),
             array('en', 'UK', '/images/locale/flag-en-UK.png', array(), $en),
 

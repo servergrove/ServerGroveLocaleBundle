@@ -6,22 +6,20 @@
 
 {% block flags %}
 {% for asset in flags %}
-{% if asset is assetvisible %}
-{{ asset_flag(asset, attrs) }}
+{% if asset is assetvisible or not hideCurrent %}
+{{ asset_flag(asset, { attrs: attrs }) }}
 {% endif %}
 {% endfor %}
 {% endblock %}
 
 {% block path_flag %}
-{% spaceless %}
-{{ url_asset_flag(path(route, route_params|default({})), asset, attrs) }}
-{% endspaceless %}
+{{ url_asset_flag(path(route, route_params|default({})), asset, { attrs: attrs }) }}
 {% endblock %}
 
 {% block path_flags %}
 {% for asset in flags %}
-{% if asset is assetvisible %}
-{{ path_asset_flag(route, asset, route_params, attrs) }}
+{% if asset is assetvisible or not hideCurrent %}
+{{ path_asset_flag(route, asset, route_params, { attrs: attrs }) }}
 {% endif %}
 {% endfor %}
 {% endblock %}
@@ -29,15 +27,15 @@
 {% block linked_flag %}
 {% spaceless %}
 <a href="{{ url }}">
-{{ asset_flag(asset, attrs) }}
+{{ asset_flag(asset, { attrs: attrs }) }}
 </a>
 {% endspaceless %}
 {% endblock %}
 
 {% block url_flags %}
 {% for asset in flags %}
-{% if asset is assetvisible %}
-{{ url_asset_flag(asset_url(asset), asset, attrs) }}
+{% if asset is assetvisible or not hideCurrent %}
+{{ url_asset_flag(asset_url(asset), asset, { attrs: attrs }) }}
 {% endif %}
 {% endfor %}
 {% endblock %}
