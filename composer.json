@@ -11,8 +11,11 @@
         "kriswallsmith/assetic": "v1.0.3",
         "symfony/framework-bundle": "v2.0.15",
         "symfony/finder": "v2.0.15",
-        "symfony/filesystem": "*",
         "symfony/twig-bridge": "v2.0.15",
         "symfony/console": "v2.0.15"
+    },
+
+    "require-dev": {
+        "symfony/filesystem": "dev-master"
     }
 }
