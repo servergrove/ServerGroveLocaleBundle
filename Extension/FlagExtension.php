@@ -105,62 +105,78 @@ class FlagExtension extends \Twig_Extension
      * Returns the HTML content of the image
      *
      * @param string $assetName
-     * @param array  $attrs
+     * @param array  $options
      *
      * @return string
      */
-    public function renderAssetFlag($assetName, array $attrs = array())
+    public function renderAssetFlag($assetName, array $options = array())
     {
-        return $this->renderTemplateBlock('flag', array(
-            'asset' => $this->factory->getAssetManager()->get($assetName),
-            'attrs' => $attrs
-        ));
+        $asset = $this->factory->getAssetManager()->get($assetName);
+
+        $attrs = array();
+        if (isset($options['attrs'])) {
+            foreach ($options['attrs'] as $key => $value) {
+                if (is_array($value)) {
+                    if (isset($value[$localeString = $asset->getLocaleString()])) {
+                        $attrs[$key] = $value[$localeString];
+                    }
+                } else {
+                    $attrs[$key] = $value;
+                }
+            }
+
+            unset($options['attrs']);
+        }
+
+        $options = array_merge($options, array('attrs' => $attrs, 'asset' => $asset));
+
+        return $this->renderTemplateBlock('flag', $options);
     }
 
     /**
      * @param string      $locale
      * @param string|null $country
-     * @param array       $attrs
+     * @param array       $options
      *
      * @return string
      */
-    public function renderFlag($locale, $country = null, array $attrs = array())
+    public function renderFlag($locale, $country = null, array $options = array())
     {
-        return $this->renderAssetFlag($this->getAssetName($locale, $country), $attrs);
+        return $this->renderAssetFlag($this->getAssetName($locale, $country), $options);
     }
 
     /**
-     * @param array $attrs
+     * @param array $options
      *
      * @return string
      */
-    public function renderFlags(array $attrs = array())
+    public function renderFlags(array $options = array())
     {
-        return $this->renderTemplateBlock('flags', array(
-            'attrs' => $attrs,
-            'flags' => $this->getAssetsNames()
-        ));
+        $options = array_merge(array('hideCurrent' => true), $options, array('flags' => $this->getAssetsNames()));
+
+        return $this->renderTemplateBlock('flags', $options);
     }
 
     /**
      * @param string $route
      * @param string $assetName
      * @param array  $params
-     * @param array  $attrs
+     * @param array  $options
      *
      * @return string
      */
-    public function renderPathAssetFlag($route, $assetName, $params = array(), array $attrs = array())
+    public function renderPathAssetFlag($route, $assetName, $params = array(), array $options = array())
     {
         /** @var $asset \ServerGrove\LocaleBundle\Asset\LocaleAsset */
         $asset = $this->factory->getAssetManager()->get($assetName);
 
-        return $this->renderTemplateBlock('path_flag', array(
+        $options = array_merge(array('attrs' => array()), $options, array(
             'route'        => $route,
             'asset'        => $assetName,
-            'route_params' => array_merge($params, array('_locale' => $asset->getLocale())),
-            'attrs'        => $attrs
+            'route_params' => array_merge($params, array('_locale' => $asset->getLocale()))
         ));
+
+        return $this->renderTemplateBlock('path_flag', $options);
     }
 
     /**
@@ -168,85 +184,87 @@ class FlagExtension extends \Twig_Extension
      * @param string      $locale
      * @param array       $params
      * @param string|null $country
-     * @param array       $attrs
+     * @param array       $options
      *
      * @return string
      */
-    public function renderPathFlag($route, $locale, $params = array(), $country = null, array $attrs = array())
+    public function renderPathFlag($route, $locale, $params = array(), $country = null, array $options = array())
     {
-        return $this->renderPathAssetFlag($route, $this->getAssetName($locale, $country), $params, $attrs);
+        return $this->renderPathAssetFlag($route, $this->getAssetName($locale, $country), $params, $options);
     }
 
     /**
      * @param string $route
      * @param array  $params
-     * @param array  $attrs
+     * @param array  $options
      *
      * @return string
      */
-    public function renderPathFlags($route, $params = array(), array $attrs = array())
+    public function renderPathFlags($route, $params = array(), array $options = array())
     {
-        return $this->renderTemplateBlock('path_flags', array(
+        $options = array_merge(array('attrs' => array(), 'hideCurrent' => true), $options, array(
             'route'        => $route,
             'route_params' => $params,
-            'attrs'        => $attrs,
             'flags'        => $this->getAssetsNames()
         ));
+
+        return $this->renderTemplateBlock('path_flags', $options);
     }
 
     /**
      * @param string $url
      * @param string $assetName
-     * @param array  $attrs
+     * @param array  $options
      *
      * @return string
      */
-    public function renderUrlAssetFlag($url, $assetName, array $attrs = array())
+    public function renderUrlAssetFlag($url, $assetName, array $options = array())
     {
-        return $this->renderLinkedFlag($url, $assetName, $attrs);
+        return $this->renderLinkedFlag($url, $assetName, $options);
     }
 
     /**
      * @param string      $locale
      * @param string|null $country
-     * @param array       $attrs
+     * @param array       $options
      *
      * @return string
      */
-    public function renderUrlFlag($locale, $country = null, array $attrs = array())
+    public function renderUrlFlag($locale, $country = null, array $options = array())
     {
         $assetName = $this->getAssetName($locale, $country);
 
-        return $this->renderUrlAssetFlag($this->getAssetUrl($assetName), $assetName, $attrs);
+        return $this->renderUrlAssetFlag($this->getAssetUrl($assetName), $assetName, $options);
     }
 
     /**
-     * @param array $attrs
+     * @param array $options
      *
      * @return string
      */
-    public function renderUrlFlags(array $attrs = array())
+    public function renderUrlFlags(array $options = array())
     {
-        return $this->renderTemplateBlock('url_flags', array(
-            'attrs' => $attrs,
-            'flags' => $this->getAssetsNames()
-        ));
+        $options = array_merge(array('attrs'       => array(),
+                                     'hideCurrent' => true), $options, array('flags' => $this->getAssetsNames()));
+
+        return $this->renderTemplateBlock('url_flags', $options);
     }
 
     /**
      * @param string $url
      * @param string $assetName
-     * @param array  $attrs
+     * @param array  $options
      *
      * @return string
      */
-    public function renderLinkedFlag($url, $assetName, array $attrs = array())
+    public function renderLinkedFlag($url, $assetName, array $options = array())
     {
-        return $this->renderTemplateBlock('linked_flag', array(
+        $options = array_merge(array('attrs' => array()), $options, array(
             'url'   => $url,
             'asset' => $assetName,
-            'attrs' => $attrs
         ));
+
+        return $this->renderTemplateBlock('linked_flag', $options);
     }
 
     /**
