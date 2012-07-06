@@ -3,7 +3,6 @@
 namespace ServerGrove\LocaleBundle\CacheWarmer;
 
 use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmer;
-use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
  * Class FlagCacheWarmer
@@ -24,18 +23,25 @@ class FlagCacheWarmer extends CacheWarmer
     /** @var array */
     private $defaults;
 
+    /** @var array */
+    private $enabledLocales;
+
     /**
-     * @param KernelInterface $kernel
-     * @param string          $flagsPath
-     * @param array           $patterns
-     * @param array           $defaults
+     * Constructor
+     *
+     * @param string $rootDir
+     * @param string $flagsPath
+     * @param array  $patterns
+     * @param array  $defaults
+     * @param array  $enabledLocales
      */
-    public function __construct($rootDir, $flagsPath, array $patterns, array $defaults = array())
+    public function __construct($rootDir, $flagsPath, array $patterns, array $defaults = array(), array $enabledLocales = array())
     {
-        $this->rootDir   = $rootDir;
-        $this->flagsPath = $flagsPath;
-        $this->patterns  = $patterns;
-        $this->defaults  = $defaults;
+        $this->rootDir        = $rootDir;
+        $this->flagsPath      = $flagsPath;
+        $this->patterns       = $patterns;
+        $this->defaults       = $defaults;
+        $this->enabledLocales = $enabledLocales;
     }
 
     /**
@@ -60,16 +66,18 @@ class FlagCacheWarmer extends CacheWarmer
                 $match = preg_match($this->patterns[$counter], $file->getBasename(), $out);
             } while (!$match && $counter++ < count($this->patterns));
 
-            $locale   = $out['locale'];
-            $resource = str_replace(realpath($flagsPath).'/', '', $file->getRealPath());
-            if (!isset($this->defaults[$locale])) {
-                $this->defaults[$locale] = array('file' => $resource, 'locale' => $locale);
-            } elseif (is_string($this->defaults[$locale])) {
-                $this->defaults[$locale] = array('file' => $this->defaults[$locale], 'locale' => $locale);
+            $locale = $out['locale'];
+            if ($this->isLocaleEnabled($locale)) {
+                $resource = str_replace(realpath($flagsPath).'/', '', $file->getRealPath());
+                if (!isset($this->defaults[$locale])) {
+                    $this->defaults[$locale] = array('file' => $resource, 'locale' => $locale);
+                } elseif (is_string($this->defaults[$locale])) {
+                    $this->defaults[$locale] = array('file' => $this->defaults[$locale], 'locale' => $locale);
+                }
             }
 
-            if (isset($out['country'])) {
-                $map[$locale.'-'.$out['country']] = array(
+            if (isset($out['country']) && $this->isLocaleEnabled($localeString = $locale.'-'.$out['country'])) {
+                $map[$localeString] = array(
                     'file'    => $resource,
                     'locale'  => $locale,
                     'country' => $out['country']
@@ -102,5 +110,24 @@ class FlagCacheWarmer extends CacheWarmer
         }
 
         return $path;
+    }
+
+    private function isLocaleEnabled($locale)
+    {
+        if (0 == count($this->enabledLocales)) {
+            return true;
+        }
+
+        if (in_array($locale, $this->enabledLocales)) {
+            return true;
+        }
+
+        foreach ($this->enabledLocales as $enabledLocale) {
+            if (strpos($enabledLocale, '*') !== false && preg_match('/'.str_replace('*', '.*', $enabledLocale).'/', $locale)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

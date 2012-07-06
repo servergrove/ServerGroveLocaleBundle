@@ -23,6 +23,7 @@ class Configuration implements ConfigurationInterface
         $rootNode    = $treeBuilder->root('server_grove_locale');
 
         $this->configureFlagsPath($rootNode);
+        $this->configureEnabledLocales($rootNode);
         $this->configureHiddenLocales($rootNode);
         $this->configureCacheWarmer($rootNode);
         $this->configureTemplate($rootNode);
@@ -179,5 +180,20 @@ class Configuration implements ConfigurationInterface
                     ->prototype('scalar')->end()
                 ->end()
             ->end();
+    }
+
+    /**
+     * @param ArrayNodeDefinition $rootNode
+     */
+    private function configureEnabledLocales($rootNode)
+    {
+        $rootNode
+            ->children()
+                ->arrayNode('enabled_locales')
+                    ->defaultValue(array())
+                    ->prototype('scalar')->end()
+                ->end()
+            ->end()
+        ;
     }
 }
