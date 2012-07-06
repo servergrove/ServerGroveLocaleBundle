@@ -30,6 +30,7 @@ class CacheWarmerDefinition extends Definition
             ->addArgument($flagsPath)
             ->addArgument($patterns)
             ->addArgument($defaults)
+            ->addArgument('%server_grove_locale.enabled_locales%')
             ->addTag('kernel.cache_warmer');
     }
 

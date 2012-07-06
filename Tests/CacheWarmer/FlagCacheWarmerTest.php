@@ -20,21 +20,7 @@ class FlagCacheWarmerTest extends \PHPUnit_Framework_TestCase
      */
     public function testCacheWarmer($bundleName, $flagsPath, array $patterns, array $settings)
     {
-        $kernel = $this->getKernelForBundleTest($bundleName);
-
-        $warmer = new FlagCacheWarmer(
-            $kernel->getRootDir(),
-            strtr($flagsPath, array(':cacheDir' => $this->cacheDir)),
-            $patterns,
-            isset($settings['defaults']) ? $settings['defaults'] : array()
-        );
-
-        $this->assertFalse($warmer->isOptional(), 'Warmer should not be optional');
-
-        $warmer->warmUp($kernel->getCacheDir());
-
-        $this->assertFileExists($file = $kernel->getCacheDir().'/flags.php');
-        $map = require $file;
+        $map = $this->getWarmerProcessedMap($bundleName, $flagsPath, $patterns, $settings);
 
         $this->assertArrayHasKey('defaults', $map, 'The default flags were not found');
 
@@ -47,6 +33,44 @@ class FlagCacheWarmerTest extends \PHPUnit_Framework_TestCase
                 foreach ($info['countries'] as $country) {
                     $this->assertArrayHasKey($locale.'-'.$country, $map);
                 }
+            }
+        }
+    }
+
+    /**
+     * @dataProvider getTestData
+     */
+    public function testEnabledLocales($bundleName, $flagsPath, array $patterns, array $settings)
+    {
+        $map = $this->getWarmerProcessedMap($bundleName, $flagsPath, $patterns, array_merge($settings, array('enabled_locales' => array('en'))));
+
+        $this->assertArrayHasKey('en', $map['defaults']);
+        $this->assertArrayNotHasKey('es', $map['defaults']);
+        $this->assertArrayNotHasKey('pt', $map['defaults']);
+
+        $map = $this->getWarmerProcessedMap($bundleName, $flagsPath, $patterns, array_merge($settings, array('enabled_locales' => array(
+            'en',
+            'es'
+        ))));
+
+        $this->assertArrayHasKey('en', $map['defaults']);
+        $this->assertArrayHasKey('es', $map['defaults']);
+        $this->assertArrayNotHasKey('pt', $map['defaults']);
+
+        $map = $this->getWarmerProcessedMap($bundleName, $flagsPath, $patterns, array_merge($settings, array('enabled_locales' => array(
+            'en',
+            'es*'
+        ))));
+
+        $this->assertArrayNotHasKey('en-UK', $map);
+        $this->assertArrayNotHasKey('en-US', $map);
+        $this->assertArrayNotHasKey('pt', $map);
+        $this->assertArrayNotHasKey('pt-BR', $map);
+        $this->assertArrayNotHasKey('pt-PT', $map);
+
+        if (isset($settings['file']['es'], $settings['file']['es']['countries'])) {
+            foreach ($settings['file']['es']['countries'] as $country) {
+                $this->assertArrayHasKey('es-'.$country, $map);
             }
         }
     }
@@ -164,9 +188,10 @@ class FlagCacheWarmerTest extends \PHPUnit_Framework_TestCase
         $mock
             ->expects($this->any())
             ->method('getBundle')
-            ->will($this->returnCallback(function($name) use ($bundles) {
-            return $bundles[$name];
-        }));
+            ->will($this->returnCallback(
+            function($name) use ($bundles) {
+                return $bundles[$name];
+            }));
 
         $mock
             ->expects($this->any())
@@ -189,7 +214,7 @@ class FlagCacheWarmerTest extends \PHPUnit_Framework_TestCase
     /**
      * @param $name
      *
-     * @return Symfony\Component\HttpKernel\BundleInterface
+     * @return \Symfony\Component\HttpKernel\Bundle\BundleInterface
      */
     private function getMockForBundle($name)
     {
@@ -200,5 +225,26 @@ class FlagCacheWarmerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue($this->cacheDir.'/src/'.$name));
 
         return $mock;
+    }
+
+    private function getWarmerProcessedMap($bundleName, $flagsPath, $patterns, $settings)
+    {
+        $kernel = $this->getKernelForBundleTest($bundleName);
+
+        $warmer = new FlagCacheWarmer(
+            $kernel->getRootDir(),
+            strtr($flagsPath, array(':cacheDir' => $this->cacheDir)),
+            $patterns,
+            isset($settings['defaults']) ? $settings['defaults'] : array(),
+            isset($settings['enabled_locales']) ? $settings['enabled_locales'] : array()
+        );
+
+        $this->assertFalse($warmer->isOptional(), 'Warmer should not be optional');
+
+        $warmer->warmUp($kernel->getCacheDir());
+
+        $this->assertFileExists($file = $kernel->getCacheDir().'/flags.php');
+
+        return require $file;
     }
 }

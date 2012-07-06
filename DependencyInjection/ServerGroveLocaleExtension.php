@@ -26,6 +26,7 @@ class ServerGroveLocaleExtension extends Extension
         $loader->load('services.xml');
 
         $container->setParameter('server_grove_locale.hide_current_locale', $config['hide_current_locale']);
+        $container->setParameter('server_grove_locale.enabled_locales', $config['enabled_locales']);
         $container->setParameter('server_grove_locale.template', $config['template']);
         $container->setParameter('server_grove_locale.flags_path', $config['flags_path']);
 
