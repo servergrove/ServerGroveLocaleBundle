@@ -32,7 +32,7 @@
 {% endspaceless %}
 {% endblock %}
 
-{% block url_flags %}
+{% block domains_flags %}
 {% for asset in flags %}
 {% if asset is assetvisible or not hideCurrent %}
 {{ url_asset_flag(asset_url(asset), asset, { attrs: attrs }) }}
