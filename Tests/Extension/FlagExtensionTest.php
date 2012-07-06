@@ -67,7 +67,7 @@ class FlagExtensionTest extends \PHPUnit_Framework_TestCase
     {
         $extension = $this->createExtension($mapping, $domains = array('default' => 'http://servergrove.com'));
 
-        $content = $extension->renderUrlFlag($locale, $country, array('attrs' => $attrs));
+        $content = $extension->renderDomainFlag($locale, $country, array('attrs' => $attrs));
 
         $this->assertNotEmpty($content, 'Flag rendering is empty');
         $this->assertTag(array(

@@ -75,7 +75,8 @@ class FlagExtension extends \Twig_Extension
 
             'url_asset_flag'  => new \Twig_Function_Method($this, 'renderUrlAssetFlag', $options),
             'url_flag'        => new \Twig_Function_Method($this, 'renderUrlFlag', $options),
-            'url_flags'       => new \Twig_Function_Method($this, 'renderUrlFlags', $options),
+            'domain_flag'     => new \Twig_Function_Method($this, 'renderDomainFlag', $options),
+            'domains_flags'   => new \Twig_Function_Method($this, 'renderDomainsFlags', $options),
 
             'linked_flag'     => new \Twig_Function_Method($this, 'renderLinkedFlag', $options),
 
@@ -224,17 +225,28 @@ class FlagExtension extends \Twig_Extension
     }
 
     /**
+     * @param string      $url
      * @param string      $locale
      * @param string|null $country
      * @param array       $options
      *
      * @return string
      */
-    public function renderUrlFlag($locale, $country = null, array $options = array())
+    public function renderUrlFlag($url, $locale, $country = null, array $options = array())
     {
-        $assetName = $this->getAssetName($locale, $country);
+        return $this->renderUrlAssetFlag($url, $this->getAssetName($locale, $country), $options);
+    }
 
-        return $this->renderUrlAssetFlag($this->getAssetUrl($assetName), $assetName, $options);
+    /**
+     * @param string      $locale
+     * @param string|null $country
+     * @param array       $options
+     *
+     * @return string
+     */
+    public function renderDomainFlag($locale, $country = null, array $options = array())
+    {
+        return $this->renderUrlFlag($this->getAssetUrl($this->getAssetName($locale, $country)), $locale, $country, $options);
     }
 
     /**
@@ -242,12 +254,14 @@ class FlagExtension extends \Twig_Extension
      *
      * @return string
      */
-    public function renderUrlFlags(array $options = array())
+    public function renderDomainsFlags(array $options = array())
     {
-        $options = array_merge(array('attrs'       => array(),
-                                     'hideCurrent' => true), $options, array('flags' => $this->getAssetsNames()));
+        $options = array_merge(array(
+            'attrs'       => array(),
+            'hideCurrent' => true
+        ), $options, array('flags' => $this->getAssetsNames()));
 
-        return $this->renderTemplateBlock('url_flags', $options);
+        return $this->renderTemplateBlock('domains_flags', $options);
     }
 
     /**
