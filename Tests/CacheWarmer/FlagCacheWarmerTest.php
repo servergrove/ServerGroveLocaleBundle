@@ -189,7 +189,7 @@ class FlagCacheWarmerTest extends \PHPUnit_Framework_TestCase
     /**
      * @param $name
      *
-     * @return Symfony\Component\HttpKernel\BundleInterface
+     * @return \Symfony\Component\HttpKernel\Bundle\BundleInterface
      */
     private function getMockForBundle($name)
     {
