@@ -155,7 +155,6 @@ If you set an array for a specific attribute, you would have to specify for whic
         alt: {
             en: "My locale flag in English",
         },
-
         title: "The title of my flag"
     }
 }) }}
