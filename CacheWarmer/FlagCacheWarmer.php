@@ -51,7 +51,11 @@ class FlagCacheWarmer extends CacheWarmer
     {
         $finder = new \Symfony\Component\Finder\Finder();
 
-        $finder = $finder->files()->sortByName();
+        $finder = $finder->files()->sort(function ($a, $b) {
+            $result = strcmp($a->getRealpath(), $b->getRealpath());
+
+            return 1 == $result && 0 == substr_compare($a->getBasename(), $b->getBasename(), 0, 2) ? -1 : $result;
+        });
         foreach ($this->patterns as $pattern) {
             $finder->name($pattern);
         }
