@@ -5,8 +5,7 @@ This bundle provides a set of Twig functions to display browser culture codes.
 
 [![Build Status](https://secure.travis-ci.org/servergrove/ServerGroveLocaleBundle.png?branch=master)](http://travis-ci.org/servergrove/ServerGroveLocaleBundle)
 
-Installation
-------------
+## Installation ##
 
 You need to follow the steps according to your Symfony version.
 
@@ -63,20 +62,28 @@ public function registerBundles()
 
 Coming soon
 
-Displaying Flags
-----------------
+Displaying one flag
+-------------------
 
+There are three helpful functions for displaying a single flag.
 
+### flag ###
 
-### Simple flag ###
-
+The `flag` function displays only the image:
 
 ```
 {{ flag(locale) }}
 {{ flag(locale, country) }}
 ```
 
-It also supports a third param for the image attributes
+You can also use a third param with options. Among them, there is a `attrs` option which allows to add attributes to the image.
+
+```
+{{ flag(locale, country, { attrs: { alt: "My locale flag", title: "The title of my flag" } }) }}
+```
+
+### path_flag ###
+
 
 ### Configured flags ###
 
