@@ -31,11 +31,11 @@ class FlagExtensionTest extends \PHPUnit_Framework_TestCase
     public function testFlagAttributes()
     {
         $extension = $this->createExtension(array(
-            'en' => array(
+            'defaults' => array('en' => array(
                 'file'    => 'en.png',
                 'locale'  => 'en',
                 'country' => null
-            )
+            ))
         ));
 
         $this->assertEquals('<img src="/images/locale/flag-en.png"/>', $extension->renderFlag('en'));
@@ -160,14 +160,14 @@ class FlagExtensionTest extends \PHPUnit_Framework_TestCase
 
         return array(
             array('es', null, '/images/locale/flag-es-ES.png', array('alt' => 'Spanish'), $es),
-            array('es', 'AR', '/images/locale/flag-es-AR.png', array(), $es),
+            array('es', 'AR', '/images/locale/flag-es-ES.png', array(), $es),
 
             array('en', null, '/images/locale/flag-en.png', array('title' => 'English'), $simple),
             array('en', null, '/images/locale/flag-en-US.png', array(), $en),
-            array('en', 'UK', '/images/locale/flag-en-UK.png', array(), $en),
+            array('en', 'UK', '/images/locale/flag-en-US.png', array(), $en),
 
             array('pt', null, '/images/locale/flag-pt-PT.png', array(), $pt),
-            array('pt', 'BR', '/images/locale/flag-pt-BR.png', array(), $pt)
+            array('pt', 'BR', '/images/locale/flag-pt-PT.png', array(), $pt)
         );
     }
 
