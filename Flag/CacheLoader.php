@@ -38,6 +38,22 @@ class CacheLoader implements LoaderInterface
         return $this->flags;
     }
 
+    /**
+     * @param string $locale
+     */
+    public function forceDefault($locale)
+    {
+        $this->load();
+
+        if (isset($this->flags[$locale])) {
+            $this->flags['defaults'][$this->flags[$locale]['locale']] = $this->flags[$locale];
+
+            return true;
+        }
+
+        return false;
+    }
+
     private function load()
     {
         if (!$this->loaded && is_readable($cache = $this->cacheDir.DIRECTORY_SEPARATOR.'flags.php')) {

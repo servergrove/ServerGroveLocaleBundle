@@ -16,4 +16,9 @@ interface LoaderInterface
      * @return array
      */
     public function getFlags();
+
+    /**
+     * @param string $locale
+     */
+    public function forceDefault($locale);
 }
