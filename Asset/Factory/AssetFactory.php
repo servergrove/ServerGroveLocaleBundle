@@ -56,8 +56,6 @@ class AssetFactory extends BaseFactory
                 }
             };
 
-            array_walk($flags, $setup);
-
             if (isset($flags['defaults'])) {
                 array_walk($flags['defaults'], $setup);
             }

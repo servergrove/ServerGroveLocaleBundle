@@ -46,7 +46,7 @@ class CacheLoader implements LoaderInterface
         $this->load();
 
         if (isset($this->flags[$locale])) {
-            $this->flags['defaults'][$this->flags[$locale]['locale']] = $this->flags[$locale];
+            $this->flags['defaults'][$this->flags[$locale]['locale']]['file'] = $this->flags[$locale]['file'];
 
             return true;
         }
