@@ -28,8 +28,7 @@
             <argument>%server_grove_locale.hide_current_locale%</argument>
         </service>
 
-        <service id="server_grove_locale.locale_listener" class="%server_grove_locale.locale_listener.class%" scope="request" public="true">
-            <argument type="service" id="request"/>
+        <service id="server_grove_locale.locale_listener" class="%server_grove_locale.locale_listener.class%">
             <argument type="service" id="server_grove_locale.flag.loader"/>
             <tag name="kernel.event_listener" event="kernel.request" method="onKernelRequest" />
         </service>
