@@ -174,7 +174,7 @@ class FlagExtension extends \Twig_Extension
         $options = array_merge(array('attrs' => array()), $options, array(
             'route'        => $route,
             'asset'        => $assetName,
-            'route_params' => array_merge($params, array('_locale' => $asset->getLocale()))
+            'route_params' => array_merge($params, array('_locale' => $asset->getLocaleString()))
         ));
 
         return $this->renderTemplateBlock('path_flag', $options);
@@ -377,11 +377,11 @@ class FlagExtension extends \Twig_Extension
      */
     private function getLocaleFromAsset($assetName)
     {
-        if ('locale_' != substr($assetName, 0, 7)) {
-            return $assetName;
+        if ('locale_' == substr($assetName, 0, 7)) {
+            $assetName = substr($assetName, 7);
         }
 
-        return substr($assetName, 7);
+        return preg_replace('/[^a-zA-Z]+/', '-', $assetName);
     }
 
     /**
