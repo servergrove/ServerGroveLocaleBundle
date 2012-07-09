@@ -10,6 +10,7 @@
         <parameter key="server_grove_locale.flag_cache_warmer.class">ServerGrove\LocaleBundle\CacheWarmer\FlagCacheWarmer</parameter>
         <parameter key="server_grove_locale.flag_extension.class">ServerGrove\LocaleBundle\Extension\FlagExtension</parameter>
         <parameter key="server_grove_locale.flag_extension_factory.class">ServerGrove\LocaleBundle\Extension\FlagExtensionFactory</parameter>
+        <parameter key="server_grove_locale.locale_listener.class">ServerGrove\LocaleBundle\EventListener\LocaleListener</parameter>
     </parameters>
 
     <services>
@@ -25,6 +26,12 @@
         <service id="server_grove_locale.flag_extension_factory" class="%server_grove_locale.flag_extension_factory.class%">
             <argument type="service" id="service_container"/>
             <argument>%server_grove_locale.hide_current_locale%</argument>
+        </service>
+
+        <service id="server_grove_locale.locale_listener" class="%server_grove_locale.locale_listener.class%" scope="request" public="true">
+            <argument type="service" id="request"/>
+            <argument type="service" id="server_grove_locale.flag.loader"/>
+            <tag name="kernel.event_listener" event="kernel.request" method="onKernelRequest" />
         </service>
 
         <service id="server_grove_locale.flag_extension"

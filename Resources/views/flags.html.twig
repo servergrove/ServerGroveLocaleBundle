@@ -6,7 +6,7 @@
 
 {% block flags %}
 {% for asset in flags %}
-{% if asset is assetvisible or not hideCurrent %}
+{% if not hideCurrent or asset is assetvisible %}
 {{ asset_flag(asset, { attrs: attrs }) }}
 {% endif %}
 {% endfor %}
@@ -18,7 +18,7 @@
 
 {% block path_flags %}
 {% for asset in flags %}
-{% if asset is assetvisible or not hideCurrent %}
+{% if not hideCurrent or asset is assetvisible %}
 {{ path_asset_flag(route, asset, route_params, { attrs: attrs }) }}
 {% endif %}
 {% endfor %}
