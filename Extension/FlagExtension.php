@@ -287,7 +287,7 @@ class FlagExtension extends \Twig_Extension
 
         if (isset($this->domains[$localeString])) {
             return $this->domains[$localeString];
-        } elseif (preg_match('/^(?P<locale>[a-z]{2})\-[a-z]{2}$/', strtolower($localeString), $out) && isset($this->domains[$out['locale']])) {
+        } elseif (preg_match('/^(?P<locale>[a-z]{2})\-[A-Z]{2}$/i', $localeString, $out) && isset($this->domains[$out['locale']])) {
             return $this->domains[$out['locale']];
         } else {
             return $this->domains['default'];

@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block path_flag %}
-{{ url_asset_flag(path(route, route_params|default({})), asset, { attrs: attrs }) }}
+{{- url_asset_flag(path(route, route_params|default({})), asset, { attrs: attrs }) -}}
 {% endblock %}
 
 {% block path_flags %}

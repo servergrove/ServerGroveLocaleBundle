@@ -2,295 +2,229 @@
 
 namespace ServerGrove\LocaleBundle\Tests\Extension;
 
-use ServerGrove\LocaleBundle\Asset\Factory\AssetFactory;
-use ServerGrove\LocaleBundle\Extension\FlagExtension;
+use ServerGrove\LocaleBundle\Tests\TestCase;
 
 /**
  * Class FlagExtensionTest
  *
  * @author Ismael Ambrosi<ismael@servergrove.com>
  */
-class FlagExtensionTest extends \PHPUnit_Framework_TestCase
+class FlagExtensionTest extends TestCase
 {
-    /** @var \Twig_Environment */
-    private $twig;
-
-    /** @var string */
-    private $template;
-
-    public function testExtension()
+    public function testHideLocale()
     {
-        $extension = $this->createExtension(array());
+        $extension = $this->createExtension();
 
-        $this->assertEquals('flag', $extension->getName());
+        $this->assertAttributeEmpty('hiddenLocales', $extension);
 
-        $functions = $extension->getFunctions();
-        $this->assertArrayHasKey('flag', $functions);
+        $extension->hideLocale('es');
+
+        $this->assertAttributeNotEmpty('hiddenLocales', $extension);
     }
 
-    public function testFlagAttributes()
+    public function testIsAssetVisible()
     {
-        $extension = $this->createExtension(array(
-            'defaults' => array('en' => array(
-                'file'    => 'en.png',
-                'locale'  => 'en',
-                'country' => null
-            ))
-        ));
+        $extension = $this->createExtension();
 
-        $this->assertEquals('<img src="/images/locale/flag-en.png"/>', $extension->renderFlag('en'));
-        $this->assertEquals('<img src="/images/locale/flag-en.png" alt="Testing"/>', $extension->renderFlag('en', null, array('attrs' => array('alt' => 'Testing'))));
-        $this->assertEquals('<img src="/images/locale/flag-en.png" alt="Testing"/>', $extension->renderFlag('en', null, array('attrs' => array('alt' => array('en' => 'Testing')))));
-        $this->assertEquals('<img src="/images/locale/flag-en.png"/>', $extension->renderFlag('en', null, array('attrs' => array('alt' => array('es' => 'Testing')))));
+        $this->assertTrue($extension->isAssetVisible('en'));
+        $extension->hideLocale('en');
+        $this->assertFalse($extension->isAssetVisible('en'));
     }
 
-    /**
-     * @dataProvider getFlagData
-     */
-    public function testRenderFlag($locale, $country, $image, array $attrs, array $mapping)
+    public function testRenderAssetFlag()
     {
-        $extension = $this->createExtension($mapping);
+        $extension = $this->createExtension();
 
-        $content = $extension->renderFlag($locale, $country, array('attrs' => $attrs));
+        $content = $extension->renderAssetFlag('locale_en');
+        $this->assertEquals('<img src="/images/locale/en.png"/>', $content);
 
-        $this->assertNotEmpty($content, 'Flag rendering is empty');
-        $this->assertTag(array(
-            'tag'        => 'img',
-            'attributes' => array_merge($attrs, array('src' => $image))
-        ), $content, sprintf('Invalid image tag%s%1$s- Actual: %s%1$s+ Expected: %s%1$s', PHP_EOL, $content, $image));
+        $content = $extension->renderAssetFlag('locale_en_gb');
+        $this->assertEquals('<img src="/images/locale/en-GB.png"/>', $content);
+    }
+
+    public function testRenderFlag()
+    {
+        $extension = $this->createExtension();
+
+        $content = $extension->renderFlag('en');
+        $this->assertEquals('<img src="/images/locale/en.png"/>', $content);
+
+        $content = $extension->renderFlag('en', 'GB');
+        $this->assertEquals('<img src="/images/locale/en-GB.png"/>', $content);
     }
 
     /**
-     * @dataProvider getFlagData
+     * @dataProvider defaultsProvider
      */
-    public function testRenderUrlFlag($locale, $country, $image, array $attrs, array $mapping)
+    public function testRenderFlags($defaults)
     {
-        $extension = $this->createExtension($mapping, $domains = array('default' => 'http://servergrove.com'));
-
-        $content = $extension->renderDomainFlag($locale, $country, array('attrs' => $attrs));
-
-        $this->assertNotEmpty($content, 'Flag rendering is empty');
-        $this->assertTag(array(
-            'tag'        => 'a',
-            'attributes' => array('href' => $domains[isset($domains[$locale]) ? $locale : 'default']),
-            'child'      => array(
-                'tag' => 'img'
-            )
-        ), $content, sprintf('Invalid image tag%s%1$s- Actual: %s%1$s+ Expected: %s%1$s', PHP_EOL, $content, $image));
-    }
-
-    /**
-     * @dataProvider getFlagsData
-     */
-    public function testRenderFlags(array $mapping)
-    {
-        $extension = $this->createExtension($mapping);
+        $extension = $this->createExtension(array('defaults' => $defaults));
 
         $content = $extension->renderFlags();
-        $this->assertNotEmpty($content, 'Flags rendering is empty');
+        $this->assertNotEmpty($content);
+        $this->assertEquals($this->getImagesHtmlForLocales($defaults), $content);
+    }
 
-        $images = '';
-        foreach ($mapping as $locale => $info) {
-            if ('defaults' != $locale) {
-                $images .= sprintf('<img src="/images/locale/flag-%s"/>', $info['file']).PHP_EOL;
-            }
-        }
+    public function defaultsProvider()
+    {
+        return array(
+            array(array('en' => 'en', 'es' => 'es', 'pt' => 'pt')),
+            array(array('en' => 'en-GB', 'es' => 'es-ES', 'pt' => 'pt-BR'))
+        );
+    }
+
+    public function testRenderPathAssetFlag()
+    {
+        $extension = $this->createExtension();
+
+        $content = $extension->renderPathAssetFlag('my_route', 'locale_en');
+        $this->assertEquals('<a href="/"><img src="/images/locale/en.png"/></a>', $content);
+
+        $content = $extension->renderPathAssetFlag('my_route', 'locale_en_gb');
+        $this->assertEquals('<a href="/"><img src="/images/locale/en-GB.png"/></a>', $content);
+    }
+
+    public function testRenderPathFlag()
+    {
+        $extension = $this->createExtension();
+
+        $content = $extension->renderPathFlag('my_route', 'en');
+        $this->assertEquals('<a href="/"><img src="/images/locale/en.png"/></a>', $content);
+
+        $content = $extension->renderPathFlag('my_route', 'en', array(), 'GB');
+        $this->assertEquals('<a href="/"><img src="/images/locale/en-GB.png"/></a>', $content);
+    }
+
+    /**
+     * @dataProvider defaultsProvider
+     */
+    public function testRenderPathFlags(array $defaults)
+    {
+        $extension = $this->createExtension(array('defaults' => $defaults));
+
+        $content = $extension->renderPathFlags('my_route');
+        $this->assertNotEmpty($content);
+        $this->assertEquals($this->getLinkedImagesHtmlForLocales($defaults), $content);
+    }
+
+    public function testRenderUrlAssetFlag()
+    {
+        $extension = $this->createExtension();
+
+        $content = $extension->renderUrlAssetFlag('http://servergrove.com', 'locale_en');
+        $this->assertEquals('<a href="http://servergrove.com"><img src="/images/locale/en.png"/></a>', $content);
+
+        $content = $extension->renderUrlAssetFlag('http://servergrove.eu', 'locale_en_gb');
+        $this->assertEquals('<a href="http://servergrove.eu"><img src="/images/locale/en-GB.png"/></a>', $content);
+    }
+
+    public function testRenderUrlFlag()
+    {
+        $extension = $this->createExtension();
+
+        $content = $extension->renderUrlFlag('http://servergrove.com', 'en');
+        $this->assertEquals('<a href="http://servergrove.com"><img src="/images/locale/en.png"/></a>', $content);
+
+        $content = $extension->renderUrlFlag('http://servergrove.eu', 'en', 'GB');
+        $this->assertEquals('<a href="http://servergrove.eu"><img src="/images/locale/en-GB.png"/></a>', $content);
+    }
+
+    public function testRenderDomainFlag()
+    {
+        $extension = $this->createExtension(array('domains' => $this->getTestDomains()));
+
+        $content = $extension->renderDomainFlag('en');
+        $this->assertEquals('<a href="http://servergrove.com"><img src="/images/locale/en.png"/></a>', $content);
+
+        $content = $extension->renderDomainFlag('en', 'GB');
+        $this->assertEquals('<a href="http://servergrove.eu"><img src="/images/locale/en-GB.png"/></a>', $content);
+    }
+
+    /**
+     * @dataProvider defaultsProvider
+     */
+    public function testRenderDomainsFlags(array $defaults)
+    {
+        $extension = $this->createExtension(array('defaults' => $defaults, 'domains' => $this->getTestDomains()));
+
+        $content = $extension->renderDomainsFlags();
+        $this->assertNotEmpty($content);
+        $this->assertEquals($this->getUrlImagesForLocales($defaults), $content);
+    }
+
+    public function testRenderLinkedFlag()
+    {
+        $extension = $this->createExtension();
+
+        $content = $extension->renderLinkedFlag('http://servergrove.com', 'locale_en');
+        $this->assertEquals('<a href="http://servergrove.com"><img src="/images/locale/en.png"/></a>', $content);
     }
 
     public function testGetAssetUrl()
     {
-        $extension = $this->createExtension(array(), $domains = array(
+        $extension = $this->createExtension(array('domains' => $this->getTestDomains()));
+
+        $url = $extension->getAssetUrl('locale_en');
+        $this->assertEquals('http://servergrove.com', $url);
+
+        $url = $extension->getAssetUrl('locale_en_gb');
+        $this->assertEquals('http://servergrove.eu', $url);
+
+        $url = $extension->getAssetUrl('locale_fr');
+        $this->assertEquals('http://servergrove.com', $url);
+    }
+
+    private function getImagesHtmlForLocales(array $defaults)
+    {
+        $expected = '';
+        foreach ($defaults as $locale) {
+            $expected .= sprintf('<img src="/images/locale/%s.png"/>', $locale).PHP_EOL;
+        }
+
+        return $expected;
+    }
+
+    private function getLinkedImagesHtmlForLocales(array $defaults)
+    {
+        $expected = '';
+        foreach ($defaults as $locale) {
+            $expected .= sprintf('<a href="/"><img src="/images/locale/%s.png"/></a>', $locale).PHP_EOL;
+        }
+
+        return $expected;
+    }
+
+    private function getUrlImagesForLocales($defaults)
+    {
+        $domains = $this->getTestDomains();
+
+        $expected = '';
+        foreach ($defaults as $locale) {
+            if (isset($domains[$lowerLocale = strtolower($locale)])) {
+                $url = $domains[$lowerLocale];
+            } elseif (preg_match('/^(?P<locale>[a-z]{2})\-[A-Z]{2}$/i', $locale, $out) && isset($domains[$out['locale']])) {
+                $url = $domains[$out['locale']];
+            } else {
+                $url = $domains['default'];
+            }
+
+            $expected .= sprintf('<a href="%s"><img src="/images/locale/%s.png"/></a>', $url, $locale).PHP_EOL;
+        }
+
+        return $expected;
+    }
+
+    /**
+     * @return array
+     */
+    private function getTestDomains()
+    {
+        return array(
             'default' => 'http://servergrove.com',
-            'en'      => 'http://servergrove.com',
-            'en-UK'   => 'http://servergrove.eu',
+            'en-gb'   => 'http://servergrove.eu',
             'es'      => 'http://servergrove.es',
-            'es-AR'   => 'http://servergrove.com.ar',
-            'pt'      => 'http://servergrove.com.br'
-        ));
-
-        $test   = $this;
-        $assert = function($expected, $actual) use ($domains, $extension, $test) {
-            $test->assertEquals($domains[$expected], $extension->getAssetUrl($actual), sprintf('Incorrect behavior when looking url for "%s"', $actual));
-        };
-
-        $assert('en', 'en');
-        $assert('en-UK', 'en-UK');
-        $assert('en', 'en-AU');
-        $assert('es', 'es');
-        $assert('es-AR', 'es-AR');
-        $assert('es', 'es-UY');
-        $assert('pt', 'pt');
-        $assert('pt', 'pt-BR');
-        $assert('default', 'fr');
-        $assert('default', 'de');
-    }
-
-    /**
-     * @dataProvider      getExceptionData
-     * @expectedException InvalidArgumentException
-     */
-    public function testFlagsExceptions($locale, $country, $mapping)
-    {
-        $extension = $this->createExtension($mapping);
-        $extension->renderFlag($locale, $country);
-    }
-
-    /**
-     * @return array
-     */
-    public function getFlagData()
-    {
-
-        $simple = array('defaults' => $this->getMap('en'));
-
-        $es = array_merge(array('defaults' => $this->getMap('es', 'ES', 'es')),
-            $this->getMap('es', 'ES'),
-            $this->getMap('es', 'AR')
+            'es-ar'   => 'http://servergrove.com.ar',
+            'pt-br'   => 'http://servergrove.com.br'
         );
-
-        $en = array_merge(array('defaults' => $this->getMap('en', 'US', 'en')),
-            $this->getMap('en', 'UK'),
-            $this->getMap('en', 'US')
-        );
-
-        $pt = array_merge(array('defaults' => $this->getMap('pt', 'PT', 'pt')),
-            $this->getMap('pt', 'PT'),
-            $this->getMap('pt', 'BR')
-        );
-
-        return array(
-            array('es', null, '/images/locale/flag-es-ES.png', array('alt' => 'Spanish'), $es),
-            array('es', 'AR', '/images/locale/flag-es-ES.png', array(), $es),
-
-            array('en', null, '/images/locale/flag-en.png', array('title' => 'English'), $simple),
-            array('en', null, '/images/locale/flag-en-US.png', array(), $en),
-            array('en', 'UK', '/images/locale/flag-en-US.png', array(), $en),
-
-            array('pt', null, '/images/locale/flag-pt-PT.png', array(), $pt),
-            array('pt', 'BR', '/images/locale/flag-pt-PT.png', array(), $pt)
-        );
-    }
-
-    /**
-     * @return array
-     */
-    public function getFlagsData()
-    {
-        return array(
-            array(
-                array_merge(
-                    array('defaults'=> $this->getMap('es', 'ES', 'es')),
-                    $this->getMap('es', 'ES'),
-                    $this->getMap('es', 'AR')
-                )
-            ),
-
-            array(
-                array_merge(
-                    array('defaults'=> $this->getMap('en', 'US', 'en')),
-                    $this->getMap('en', 'UK'),
-                    $this->getMap('en', 'US')
-                )
-            ),
-
-            array(
-                array_merge(
-                    array('defaults'=> $this->getMap('pt', 'BR', 'pt')),
-                    $this->getMap('pt', 'PT'),
-                    $this->getMap('pt', 'BR')
-                )
-            ),
-        );
-    }
-
-    /**
-     * @return array
-     */
-    public function getExceptionData()
-    {
-        return array(
-            array('fr', null, array_merge(
-                array('defaults'=> $this->getMap('en', 'US', 'en')),
-                $this->getMap('en', 'UK'),
-                $this->getMap('en', 'US')
-            )),
-
-            array('de', null, array_merge(
-                array('defaults'=> $this->getMap('es', 'ES', 'es')),
-                $this->getMap('es', 'ES'),
-                $this->getMap('es', 'AR')
-            )),
-        );
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp()
-    {
-        parent::setUp();
-
-        $this->twig = new \Twig_Environment(new \Twig_Loader_Filesystem(dirname(dirname(__DIR__)).'/Resources/views'));
-
-        $generator = $this->getMock('Symfony\Component\Routing\Generator\UrlGeneratorInterface');
-        $generator
-            ->expects($this->any())
-            ->method('generate')
-            ->will($this->returnValue('/'));
-
-        $routingExtension = new \Symfony\Bridge\Twig\Extension\RoutingExtension($generator);
-
-        $this->twig->addExtension($routingExtension);
-        $routingExtension->initRuntime($this->twig);
-
-        $this->template = 'flags.html.twig';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function tearDown()
-    {
-        $this->twig = null;
-
-        parent::tearDown();
-    }
-
-    /**
-     * @param array $flags
-     *
-     * @return \ServerGrove\LocaleBundle\Extension\FlagExtension
-     */
-    private function createExtension(array $flags, array $domains = array())
-    {
-        /** @var $loader \ServerGrove\LocaleBundle\Flag\LoaderInterface */
-        $loader = $this
-            ->getMockBuilder('ServerGrove\LocaleBundle\Flag\LoaderInterface')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $loader->expects($this->any())->method('getFlags')->will($this->returnValue($flags));
-
-        $factory = new AssetFactory($loader, dirname(dirname(__DIR__)).'/Resources/public/images', true);
-        $factory->load();
-
-        $extension = new FlagExtension($factory, $this->template, $domains);
-        $this->twig->addExtension($extension);
-        $extension->initRuntime($this->twig);
-
-        return $extension;
-    }
-
-    private function getMap($locale, $country = null, $key = null)
-    {
-        $image = $locale.(is_null($country) ? '' : '-'.$country);
-        $l     = is_null($key)
-            ? $image
-            : $key;
-
-        return array($l => array(
-            'file'    => $image.'.png',
-            'locale'  => $locale,
-            'country' => is_null($key) ? $country : null
-        ));
     }
 }
