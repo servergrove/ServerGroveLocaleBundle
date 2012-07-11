@@ -411,7 +411,7 @@ class FlagExtension extends \Twig_Extension
         $assetNames = array();
 
         foreach ($defaults as $default) {
-            $assetName = 'locale_'.preg_replace('/[^\w]+/', '_', $default);
+            $assetName = 'locale_'.preg_replace('/[^\w]+/', '_', strtolower($default));
 
             if (!$assetManager->has($assetName)) {
                 throw new \RuntimeException('Missing asset for '.$assetName);
