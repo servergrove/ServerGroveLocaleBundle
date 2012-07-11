@@ -12,6 +12,9 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 class CacheLoaderTest extends \PHPUnit_Framework_TestCase
 {
+    /** @var array */
+    private $flags;
+
     /** @var string */
     private $cacheDir;
 
@@ -20,16 +23,6 @@ class CacheLoaderTest extends \PHPUnit_Framework_TestCase
 
     public function testLoader()
     {
-        $flags = array(
-            'flags'   => array(
-                'en-GB' => new \ServerGrove\LocaleBundle\Flag\Flag('/path/to/flags/en-GB.pnh', 'en', 'GB'),
-                'es-ES' => new \ServerGrove\LocaleBundle\Flag\Flag('/path/to/flags/es-ES.pnh', 'es', 'ES')
-            ),
-            'defaults'=> array('es' => 'es-ES')
-        );
-
-        file_put_contents($this->cacheDir.DIRECTORY_SEPARATOR.'flags.php', sprintf('<?php return unserialize(%s);'.PHP_EOL, var_export(serialize($flags), true)));
-
         $loader = new CacheLoader($this->cacheDir);
 
         $this->assertAttributeEquals(false, 'loaded', $loader);
@@ -39,11 +32,27 @@ class CacheLoaderTest extends \PHPUnit_Framework_TestCase
         $cachedFlags    = $loader->getFlags();
         $cachedDefaults = $loader->getDefaults();
 
-        $this->assertEquals($cachedFlags, $flags['flags']);
-        $this->assertEquals($cachedDefaults, $flags['defaults']);
+        $this->assertEquals($cachedFlags, $this->flags['flags']);
+        $this->assertEquals($cachedDefaults, $this->flags['defaults']);
         $this->assertAttributeEquals(true, 'loaded', $loader);
-        $this->assertAttributeEquals($flags['flags'], 'flags', $loader);
-        $this->assertAttributeEquals($flags['defaults'], 'defaults', $loader);
+        $this->assertAttributeEquals($this->flags['flags'], 'flags', $loader);
+        $this->assertAttributeEquals($this->flags['defaults'], 'defaults', $loader);
+    }
+
+    public function testForceDefault()
+    {
+        $loader = new CacheLoader($this->cacheDir);
+
+        $defaults = $loader->getDefaults();
+        $this->assertEquals('en-US', $defaults['en']);
+
+        $this->assertTrue($loader->forceDefault('en-GB'));
+
+        $defaults = $loader->getDefaults();
+        $this->assertEquals('en-GB', $defaults['en']);
+
+        $this->assertFalse($loader->forceDefault('en-AU'));
+        $this->assertEquals('en-GB', $defaults['en']);
     }
 
     protected function setUp()
@@ -52,6 +61,17 @@ class CacheLoaderTest extends \PHPUnit_Framework_TestCase
 
         $this->filesystem = new Filesystem();
         $this->filesystem->mkdir($this->cacheDir);
+
+        $this->flags = array(
+            'flags'   => array(
+                'en-GB' => new \ServerGrove\LocaleBundle\Flag\Flag('/path/to/flags/en-GB.pnh', 'en', 'GB'),
+                'es-ES' => new \ServerGrove\LocaleBundle\Flag\Flag('/path/to/flags/es-ES.pnh', 'es', 'ES')
+            ),
+            'defaults'=> array('es' => 'es-ES', 'en' => 'en-US')
+        );
+
+        file_put_contents($this->cacheDir.DIRECTORY_SEPARATOR.'flags.php', sprintf('<?php return unserialize(%s);'.PHP_EOL, var_export(serialize($this->flags), true)));
+
     }
 
     protected function tearDown()
