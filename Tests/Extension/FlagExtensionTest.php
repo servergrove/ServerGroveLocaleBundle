@@ -51,6 +51,21 @@ class FlagExtensionTest extends TestCase
 
         $content = $extension->renderFlag('en', 'GB');
         $this->assertEquals('<img src="/images/locale/en-GB.png"/>', $content);
+
+        $options = array(
+            'attrs' => array(
+                'alt'      => array(
+                    'en-gb'   => 'UE alt',
+                    'default' => 'Alt'
+                ), 'title' => 'My title'
+            )
+        );
+
+        $content = $extension->renderFlag('en', null, $options);
+        $this->assertEquals('<img src="/images/locale/en.png" alt="Alt" title="My title"/>', $content);
+
+        $content = $extension->renderFlag('en', 'GB', $options);
+        $this->assertEquals('<img src="/images/locale/en-GB.png" alt="UE alt" title="My title"/>', $content);
     }
 
     /**
@@ -82,6 +97,21 @@ class FlagExtensionTest extends TestCase
 
         $content = $extension->renderPathAssetFlag('my_route', 'locale_en_gb');
         $this->assertEquals('<a href="/"><img src="/images/locale/en-GB.png"/></a>', $content);
+
+        $options = array(
+            'attrs' => array(
+                'alt'      => array(
+                    'en-gb'   => 'UE alt',
+                    'default' => 'Alt'
+                ), 'title' => 'My title'
+            )
+        );
+
+        $content = $extension->renderPathAssetFlag('my_route', 'locale_en', array(), $options);
+        $this->assertEquals('<a href="/"><img src="/images/locale/en.png" alt="Alt" title="My title"/></a>', $content);
+
+        $content = $extension->renderPathAssetFlag('my_route', 'locale_en_gb', array(), $options);
+        $this->assertEquals('<a href="/"><img src="/images/locale/en-GB.png" alt="UE alt" title="My title"/></a>', $content);
     }
 
     public function testRenderPathFlag()
@@ -127,6 +157,22 @@ class FlagExtensionTest extends TestCase
 
         $content = $extension->renderUrlFlag('http://servergrove.eu', 'en', 'GB');
         $this->assertEquals('<a href="http://servergrove.eu"><img src="/images/locale/en-GB.png"/></a>', $content);
+
+        $options = array(
+            'attrs' => array(
+                'alt'      => array(
+                    'en-gb'   => 'UE alt',
+                    'default' => 'Alt'
+                ), 'title' => 'My title'
+            )
+        );
+
+        $content = $extension->renderUrlFlag('http://servergrove.com', 'en', null, $options);
+        $this->assertEquals('<a href="http://servergrove.com"><img src="/images/locale/en.png" alt="Alt" title="My title"/></a>', $content);
+
+        $content = $extension->renderUrlFlag('http://servergrove.eu', 'en', 'GB', $options);
+        $this->assertEquals('<a href="http://servergrove.eu"><img src="/images/locale/en-GB.png" alt="UE alt" title="My title"/></a>', $content);
+
     }
 
     public function testRenderDomainFlag()

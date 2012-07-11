@@ -369,10 +369,10 @@ class FlagExtension extends \Twig_Extension
     private function getAssetNameForAssetManager($locale, $country = null)
     {
         if ('locale_' == substr($locale, 0, 7) && is_null($country)) {
-            return $this->getLocaleString($locale, $country);
+            return $this->getLocaleString($locale, $country, '_');
         }
 
-        return 'locale_'.$this->getLocaleString($locale, $country);
+        return 'locale_'.$this->getLocaleString($locale, $country, '_');
     }
 
     /**
@@ -381,9 +381,9 @@ class FlagExtension extends \Twig_Extension
      *
      * @return string
      */
-    private function getLocaleString($locale, $country)
+    private function getLocaleString($locale, $country, $separator = '-')
     {
-        return $locale.(is_null($country) ? '' : '_'.strtolower($country));
+        return $locale.(is_null($country) ? '' : $separator.strtolower($country));
     }
 
     /**
@@ -449,7 +449,6 @@ class FlagExtension extends \Twig_Extension
      */
     private function mapAttrsForLocale(array $attrs, $localeString)
     {
-
         foreach ($attrs as $name => $value) {
             if (is_array($value)) {
                 if (isset($value[$localeString])) {
