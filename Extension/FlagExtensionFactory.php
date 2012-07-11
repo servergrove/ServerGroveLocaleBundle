@@ -3,7 +3,6 @@
 namespace ServerGrove\LocaleBundle\Extension;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use ServerGrove\LocaleBundle\Asset\Factory\AssetFactory;
 
 /**
  * Class
@@ -31,9 +30,9 @@ class FlagExtensionFactory
         $this->hideCurrentLocale = $hideCurrentLocale;
     }
 
-    public function get(AssetFactory $factory, $template, array $domains)
+    public function get($template, array $domains)
     {
-        $extension = new FlagExtension($factory, $template, $domains);
+        $extension = new FlagExtension($this->container, $template, $domains);
 
         if ($this->hideCurrentLocale && $this->container->isScopeActive('request')) {
             /** @var $request \Symfony\Component\HttpFoundation\Request */

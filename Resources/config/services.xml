@@ -16,29 +16,28 @@
     <services>
         <service id="server_grove_locale.flag.loader" class="%server_grove_locale.flag.loader.class%"/>
 
-        <service id="server_grove_locale.asset_factory" class="%server_grove_locale.asset_factory.class%">
-            <argument type="service" id="server_grove_locale.flag.loader"/>
-            <argument>%server_grove_locale.flags_path%</argument>
-            <argument>%kernel.debug%</argument>
-            <call method="load"/>
-        </service>
-
         <service id="server_grove_locale.flag_extension_factory" class="%server_grove_locale.flag_extension_factory.class%">
             <argument type="service" id="service_container"/>
             <argument>%server_grove_locale.hide_current_locale%</argument>
         </service>
 
-        <service id="server_grove_locale.locale_listener" class="%server_grove_locale.locale_listener.class%">
+        <service id="server_grove_locale.assetic.config_loader" class="ServerGrove\LocaleBundle\Asset\Factory\Loader\Loader" public="false">
+            <tag name="assetic.formula_loader" alias="locale" />
+        </service>
+        <service id="server_grove_locale.flag_assetic_resource" class="ServerGrove\LocaleBundle\Asset\Factory\Resource\LocaleCacheResource">
             <argument type="service" id="server_grove_locale.flag.loader"/>
+            <argument>%server_grove_locale.flags_path%</argument>
+            <tag name="assetic.formula_resource" loader="locale" />
+        </service>
+
+        <service id="server_grove_locale.locale_listener" class="%server_grove_locale.locale_listener.class%">
+            <argument type="service" id="server_grove_locale.flag_extension"/>
             <tag name="kernel.event_listener" event="kernel.request" method="onKernelRequest" />
         </service>
 
-        <service id="server_grove_locale.flag_extension"
-                 class="%server_grove_locale.flag_extension.class%"
-                 factory-service="server_grove_locale.flag_extension_factory"
-                 factory-method="get"
-                 public="false">
-            <argument type="service" id="server_grove_locale.asset_factory"/>
+        <service id="server_grove_locale.flag_extension" class="%server_grove_locale.flag_extension.class%" public="false">
+            <argument type="service" id="service_container"/>
+            <argument type="service" id="server_grove_locale.flag.loader"/>
             <argument>%server_grove_locale.template%</argument>
             <argument>%server_grove_locale.domains%</argument>
             <tag name="twig.extension"/>

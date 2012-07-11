@@ -4,7 +4,7 @@ namespace ServerGrove\LocaleBundle\EventListener;
 
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
-use ServerGrove\LocaleBundle\Flag\LoaderInterface;
+use ServerGrove\LocaleBundle\Extension\FlagExtension;
 
 /**
  * Class LocaleListener
@@ -13,15 +13,15 @@ use ServerGrove\LocaleBundle\Flag\LoaderInterface;
  */
 class LocaleListener
 {
-    /** @var \ServerGrove\LocaleBundle\Flag\LoaderInterface */
-    private $loader;
+    /** @var \ServerGrove\LocaleBundle\Extension\FlagExtension */
+    private $extension;
 
     /**
-     * @param \ServerGrove\LocaleBundle\Flag\LoaderInterface $loader
+     * @param \ServerGrove\LocaleBundle\Extension\FlagExtension $extension
      */
-    public function __construct(LoaderInterface $loader)
+    public function __construct(FlagExtension $extension)
     {
-        $this->loader = $loader;
+        $this->extension = $extension;
     }
 
     /**
@@ -33,9 +33,13 @@ class LocaleListener
             return;
         }
 
+        $request = $event->getRequest();
+
+        $this->extension->hideLocale($request->getLocale());
+
         $languages = array_map(function($language) {
-            return preg_replace('/[^a-zA-Z]+/', '-', $language);
-        }, $event->getRequest()->getLanguages());
+            return strtolower(preg_replace('/[^a-zA-Z]+/', '-', $language));
+        }, $request->getLanguages());
 
         $defaults = array();
 
@@ -43,7 +47,7 @@ class LocaleListener
             $language = current($languages);
             $lang     = current(explode('-', $language));
 
-            if (!isset($defaults[$lang]) && $this->loader->forceDefault($language)) {
+            if (!isset($defaults[$lang]) && $this->extension->forceDefault($language)) {
                 $defaults[$lang] = $language;
             }
 

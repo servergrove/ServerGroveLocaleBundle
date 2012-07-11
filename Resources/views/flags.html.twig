@@ -34,7 +34,7 @@
 
 {% block domains_flags %}
 {% for asset in flags %}
-{% if asset is assetvisible or not hideCurrent %}
+{% if not hideCurrent or asset is assetvisible %}
 {{ url_asset_flag(asset_url(asset), asset, { attrs: attrs }) }}
 {% endif %}
 {% endfor %}
