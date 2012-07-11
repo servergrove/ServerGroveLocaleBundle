@@ -22,6 +22,7 @@ class FlagCacheWarmerTest extends \PHPUnit_Framework_TestCase
     {
         $map = $this->getWarmerProcessedMap($bundleName, $flagsPath, $patterns, $settings);
 
+        $this->assertArrayHasKey('flags', $map, 'The flags key was not found');
         $this->assertArrayHasKey('defaults', $map, 'The default flags were not found');
 
         $this->assertArrayHasKey('es', $map['defaults']);
@@ -31,7 +32,8 @@ class FlagCacheWarmerTest extends \PHPUnit_Framework_TestCase
         foreach ($settings['files'] as $locale => $info) {
             if (isset($info['countries'])) {
                 foreach ($info['countries'] as $country) {
-                    $this->assertArrayHasKey($locale.'-'.$country, $map);
+                    $this->assertArrayNotHasKey($locale.'-'.$country, $map['flags']);
+                    $this->assertArrayHasKey($locale.'-'.strtolower($country), $map['flags']);
                 }
             }
         }
@@ -48,19 +50,15 @@ class FlagCacheWarmerTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayNotHasKey('es', $map['defaults']);
         $this->assertArrayNotHasKey('pt', $map['defaults']);
 
-        $map = $this->getWarmerProcessedMap($bundleName, $flagsPath, $patterns, array_merge($settings, array('enabled_locales' => array(
-            'en',
-            'es'
-        ))));
+        $map = $this->getWarmerProcessedMap($bundleName, $flagsPath, $patterns, array_merge($settings, array('enabled_locales' => array('en',
+            'es'))));
 
         $this->assertArrayHasKey('en', $map['defaults']);
         $this->assertArrayHasKey('es', $map['defaults']);
         $this->assertArrayNotHasKey('pt', $map['defaults']);
 
-        $map = $this->getWarmerProcessedMap($bundleName, $flagsPath, $patterns, array_merge($settings, array('enabled_locales' => array(
-            'en',
-            'es*'
-        ))));
+        $map = $this->getWarmerProcessedMap($bundleName, $flagsPath, $patterns, array_merge($settings, array('enabled_locales' => array('en',
+            'es*'))));
 
         $this->assertArrayNotHasKey('en-UK', $map);
         $this->assertArrayNotHasKey('en-US', $map);
@@ -82,38 +80,31 @@ class FlagCacheWarmerTest extends \PHPUnit_Framework_TestCase
                 'ServerGroveLocaleBundle1',
                 ':cacheDir/src/ServerGroveLocaleBundle1/Resources/public/images',
                 array('/^(?P<locale>[a-z]{2})\.png$/'),
-                array(
-                    'files' => array(
-                        'es' => true,
-                        'en' => true,
-                        'pt' => true
-                    )
-                )
+                array('files' => array(
+                    'es' => true,
+                    'en' => true,
+                    'pt' => true
+                ))
             ),
             array(
                 'ServerGroveLocaleBundle1',
                 'images/',
                 array('/^(?P<locale>[a-z]{2})\.png$/'),
-                array(
-                    'files'      => array(
-                        'es' => true,
-                        'en' => true,
-                        'pt' => true
-                    ),
-                    'flags_path' => ':cacheDir/web/images',
-                )
+                array('files'   => array(
+                    'es' => true,
+                    'en' => true,
+                    'pt' => true
+                ), 'flags_path' => ':cacheDir/web/images')
             ),
             array(
                 'ServerGroveLocaleBundle2',
                 ':cacheDir/src/ServerGroveLocaleBundle2/Resources/public/images',
-                array('/^(?P<locale>[a-z]{2})\-(?P<country>[A-Z]{2})\.png$/'),
-                array(
-                    'files' => array(
-                        'es' => array('countries'=> array('ES', 'AR', 'MX')),
-                        'en' => array('countries'=> array('US', 'UK', 'AU')),
-                        'pt' => array('countries'=> array('BR', 'PT'))
-                    )
-                )
+                array('/^(?P<locale>[a-z]{2})\.png$/', '/^(?P<locale>[a-z]{2})\-(?P<country>[A-Z]{2})\.png$/i'),
+                array('files' => array(
+                    'es' => array('countries'=> array('ES', 'AR', 'MX')),
+                    'en' => array('countries'=> array('US', 'UK', 'AU')),
+                    'pt' => array('countries'=> array('BR', 'PT'))
+                ))
             )
         );
     }
@@ -150,9 +141,12 @@ class FlagCacheWarmerTest extends \PHPUnit_Framework_TestCase
                 $langFile = $bundle->getPath().'/Resources/public/images/'.$lang.'.png';
                 if (is_array($setting)) {
                     if (isset($setting['countries'])) {
+
+                        $fs->copy($langFile, $destinationPath.'/'.$lang.'.png');
                         foreach ($setting['countries'] as $country) {
                             $fs->copy($langFile, $destinationPath.'/'.$lang.'-'.$country.'.png');
                         }
+
                     } else {
                         $fs->copy($langFile, $destinationPath.'/'.$setting['name'].'.png');
                     }
@@ -231,12 +225,15 @@ class FlagCacheWarmerTest extends \PHPUnit_Framework_TestCase
     {
         $kernel = $this->getKernelForBundleTest($bundleName);
 
+        $defaults       = isset($settings['defaults']) ? $settings['defaults'] : array();
+        $enabledLocales = isset($settings['enabled_locales']) ? $settings['enabled_locales'] : array();
+
         $warmer = new FlagCacheWarmer(
             $kernel->getRootDir(),
             strtr($flagsPath, array(':cacheDir' => $this->cacheDir)),
             $patterns,
-            isset($settings['defaults']) ? $settings['defaults'] : array(),
-            isset($settings['enabled_locales']) ? $settings['enabled_locales'] : array()
+            $defaults,
+            $enabledLocales
         );
 
         $this->assertFalse($warmer->isOptional(), 'Warmer should not be optional');
