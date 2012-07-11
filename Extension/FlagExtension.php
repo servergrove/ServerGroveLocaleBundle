@@ -186,6 +186,10 @@ class FlagExtension extends \Twig_Extension
      */
     public function renderPathFlag($route, $locale, $params = array(), $country = null, array $options = array())
     {
+        if (isset($options['attrs'])) {
+            $options['attrs'] = $this->mapAttrsForLocale($options['attrs'], $this->getLocaleString($locale, $country));
+        }
+
         return $this->renderPathAssetFlag($route, $this->getAssetName($locale, $country), $params, $options);
     }
 
@@ -229,6 +233,10 @@ class FlagExtension extends \Twig_Extension
      */
     public function renderUrlFlag($url, $locale, $country = null, array $options = array())
     {
+        if (isset($options['attrs'])) {
+            $options['attrs'] = $this->mapAttrsForLocale($options['attrs'], $this->getLocaleString($locale, $country));
+        }
+
         return $this->renderUrlAssetFlag($url, $this->getAssetName($locale, $country), $options);
     }
 
@@ -272,6 +280,8 @@ class FlagExtension extends \Twig_Extension
             'url'   => $url,
             'asset' => $assetName,
         ));
+
+        $options['attrs'] = $this->mapAttrsForLocale($options['attrs'], $this->getLocaleFromAsset($assetName));
 
         return $this->renderTemplateBlock('linked_flag', $options);
     }
