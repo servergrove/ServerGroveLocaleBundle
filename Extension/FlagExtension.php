@@ -2,7 +2,8 @@
 
 namespace ServerGrove\LocaleBundle\Extension;
 
-use ServerGrove\LocaleBundle\Asset\Factory\AssetFactory;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use ServerGrove\LocaleBundle\Flag\LoaderInterface;
 
 /**
  * Class FlagExtension
@@ -11,8 +12,8 @@ use ServerGrove\LocaleBundle\Asset\Factory\AssetFactory;
  */
 class FlagExtension extends \Twig_Extension
 {
-    /** @var \ServerGrove\LocaleBundle\Asset\Factory\AssetFactory */
-    private $factory;
+    /** @var \Assetic\AssetManager */
+    private $container;
 
     /** @var \Twig_Environment */
     private $environment;
@@ -29,16 +30,18 @@ class FlagExtension extends \Twig_Extension
     /**
      * Constructor
      *
-     * @param AssetFactory          $factory
-     * @param string|\Twig_Template $template
-     * @param array                 $domains
+     * @param ContainerInterface                             $container
+     * @param \ServerGrove\LocaleBundle\Flag\LoaderInterface $loader
+     * @param string|\Twig_Template                          $template
+     * @param array                                          $domains
      */
-    public function __construct(AssetFactory $factory, $template, array $domains)
+    public function __construct(ContainerInterface $container, LoaderInterface $loader, $template, array $domains)
     {
-        $this->factory       = $factory;
+        $this->container     = $container;
+        $this->loader        = $loader;
         $this->template      = $template;
-        $this->hiddenLocales = array();
         $this->domains       = $domains;
+        $this->hiddenLocales = array();
     }
 
     /**
@@ -112,20 +115,11 @@ class FlagExtension extends \Twig_Extension
      */
     public function renderAssetFlag($assetName, array $options = array())
     {
-        $asset = $this->factory->getAssetManager()->get($assetName);
+        $asset = $this->getAssetManager()->get($assetName);
 
         $attrs = array();
         if (isset($options['attrs'])) {
-            foreach ($options['attrs'] as $key => $value) {
-                if (is_array($value)) {
-                    if (isset($value[$localeString = $asset->getLocaleString()])) {
-                        $attrs[$key] = $value[$localeString];
-                    }
-                } else {
-                    $attrs[$key] = $value;
-                }
-            }
-
+            $attrs = $options['attrs'];
             unset($options['attrs']);
         }
 
@@ -143,6 +137,10 @@ class FlagExtension extends \Twig_Extension
      */
     public function renderFlag($locale, $country = null, array $options = array())
     {
+        if (isset($options['attrs'])) {
+            $options['attrs'] = $this->mapAttrsForLocale($options['attrs'], $this->getLocaleString($locale, $country));
+        }
+
         return $this->renderAssetFlag($this->getAssetName($locale, $country), $options);
     }
 
@@ -168,13 +166,10 @@ class FlagExtension extends \Twig_Extension
      */
     public function renderPathAssetFlag($route, $assetName, $params = array(), array $options = array())
     {
-        /** @var $asset \ServerGrove\LocaleBundle\Asset\LocaleAsset */
-        $asset = $this->factory->getAssetManager()->get($assetName);
-
         $options = array_merge(array('attrs' => array()), $options, array(
             'route'        => $route,
             'asset'        => $assetName,
-            'route_params' => array_merge($params, array('_locale' => $asset->getLocaleString()))
+            'route_params' => array_merge($params, array('_locale' => $this->getLocaleFromAsset($assetName)))
         ));
 
         return $this->renderTemplateBlock('path_flag', $options);
@@ -191,6 +186,10 @@ class FlagExtension extends \Twig_Extension
      */
     public function renderPathFlag($route, $locale, $params = array(), $country = null, array $options = array())
     {
+        if (isset($options['attrs'])) {
+            $options['attrs'] = $this->mapAttrsForLocale($options['attrs'], $this->getLocaleString($locale, $country));
+        }
+
         return $this->renderPathAssetFlag($route, $this->getAssetName($locale, $country), $params, $options);
     }
 
@@ -234,6 +233,10 @@ class FlagExtension extends \Twig_Extension
      */
     public function renderUrlFlag($url, $locale, $country = null, array $options = array())
     {
+        if (isset($options['attrs'])) {
+            $options['attrs'] = $this->mapAttrsForLocale($options['attrs'], $this->getLocaleString($locale, $country));
+        }
+
         return $this->renderUrlAssetFlag($url, $this->getAssetName($locale, $country), $options);
     }
 
@@ -278,6 +281,8 @@ class FlagExtension extends \Twig_Extension
             'asset' => $assetName,
         ));
 
+        $options['attrs'] = $this->mapAttrsForLocale($options['attrs'], $this->getLocaleFromAsset($assetName));
+
         return $this->renderTemplateBlock('linked_flag', $options);
     }
 
@@ -288,11 +293,11 @@ class FlagExtension extends \Twig_Extension
      */
     public function getAssetUrl($assetName)
     {
-        $localeString = $this->getLocaleFromAsset($assetName);
+        $localeString = $this->getLocaleFromAsset($assetName, false);
 
         if (isset($this->domains[$localeString])) {
             return $this->domains[$localeString];
-        } elseif (preg_match('/^(?P<locale>[a-z]{2})\-[A-Z]{2}$/', $localeString, $out) && isset($this->domains[$out['locale']])) {
+        } elseif (preg_match('/^(?P<locale>[a-z]{2})\-[A-Z]{2}$/i', $localeString, $out) && isset($this->domains[$out['locale']])) {
             return $this->domains[$out['locale']];
         } else {
             return $this->domains['default'];
@@ -307,6 +312,19 @@ class FlagExtension extends \Twig_Extension
     public function getName()
     {
         return 'flag';
+    }
+
+    /**
+     * @return array
+     */
+    public function getDefaults()
+    {
+        return $this->loader->getDefaults();
+    }
+
+    public function forceDefault($locale)
+    {
+        return $this->loader->forceDefault($locale);
     }
 
     /**
@@ -337,9 +355,7 @@ class FlagExtension extends \Twig_Extension
      */
     private function getAssetName($locale, $country = null)
     {
-        $assetManager = $this->factory->getAssetManager();
-
-        return $assetManager->has($assetName = $this->getAssetNameForAssetManager($locale, $country))
+        return $this->getAssetManager()->has($assetName = $this->getAssetNameForAssetManager($locale, $country))
             ? $assetName
             : $this->getAssetNameForAssetManager($locale);
     }
@@ -353,10 +369,10 @@ class FlagExtension extends \Twig_Extension
     private function getAssetNameForAssetManager($locale, $country = null)
     {
         if ('locale_' == substr($locale, 0, 7) && is_null($country)) {
-            return $this->getLocaleString($locale, $country);
+            return $this->getLocaleString($locale, $country, '_');
         }
 
-        return 'locale_'.$this->getLocaleString($locale, $country);
+        return 'locale_'.$this->getLocaleString($locale, $country, '_');
     }
 
     /**
@@ -365,9 +381,9 @@ class FlagExtension extends \Twig_Extension
      *
      * @return string
      */
-    private function getLocaleString($locale, $country)
+    private function getLocaleString($locale, $country, $separator = '-')
     {
-        return $locale.(is_null($country) ? '' : '_'.$country);
+        return $locale.(is_null($country) ? '' : $separator.strtolower($country));
     }
 
     /**
@@ -375,13 +391,23 @@ class FlagExtension extends \Twig_Extension
      *
      * @return string
      */
-    private function getLocaleFromAsset($assetName)
+    private function getLocaleFromAsset($assetName, $map = true)
     {
         if ('locale_' == substr($assetName, 0, 7)) {
             $assetName = substr($assetName, 7);
         }
 
-        return preg_replace('/[^a-zA-Z]+/', '-', $assetName);
+        $locale = preg_replace('/[^a-zA-Z]+/', '-', $assetName);
+
+        if ($map) {
+            foreach ($this->getDefaults() as $lang => $default) {
+                if ($default == $locale) {
+                    return $lang;
+                }
+            }
+        }
+
+        return $locale;
     }
 
     /**
@@ -389,21 +415,52 @@ class FlagExtension extends \Twig_Extension
      */
     private function getAssetsNames()
     {
-        $assetManager = $this->factory->getAssetManager();
-        $names        = $assetManager->getNames();
+        $assetManager = $this->getAssetManager();
 
-        $images = array();
+        $defaults   = $this->getDefaults();
+        $assetNames = array();
 
-        return array_filter($names, function($name) use ($assetManager, &$images) {
-            $image = $assetManager->get($name)->getTargetPath();
+        foreach ($defaults as $default) {
+            $assetName = 'locale_'.preg_replace('/[^\w]+/', '_', strtolower($default));
 
-            if (in_array($image, $images)) {
-                return false;
+            if (!$assetManager->has($assetName)) {
+                throw new \RuntimeException('Missing asset for '.$assetName);
             }
 
-            $images[] = $image;
+            $assetNames[] = $assetName;
+        }
 
-            return true;
-        });
+        return $assetNames;
+    }
+
+    /**
+     * @return \Assetic\AssetManager
+     */
+    private function getAssetManager()
+    {
+        return $this->container->get('assetic.asset_manager');
+    }
+
+    /**
+     * @param array  $attrs
+     * @param string $localeString
+     *
+     * @return array
+     */
+    private function mapAttrsForLocale(array $attrs, $localeString)
+    {
+        foreach ($attrs as $name => $value) {
+            if (is_array($value)) {
+                if (isset($value[$localeString])) {
+                    $attrs[$name] = $value[$localeString];
+                } elseif (isset($value['default'])) {
+                    $attrs[$name] = $value['default'];
+                } else {
+                    unset($attrs[$name]);
+                }
+            }
+        }
+
+        return $attrs;
     }
 }

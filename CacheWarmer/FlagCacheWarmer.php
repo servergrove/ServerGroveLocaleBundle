@@ -3,6 +3,7 @@
 namespace ServerGrove\LocaleBundle\CacheWarmer;
 
 use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmer;
+use ServerGrove\LocaleBundle\Flag\Flag;
 
 /**
  * Class FlagCacheWarmer
@@ -61,7 +62,8 @@ class FlagCacheWarmer extends CacheWarmer
         }
 
         $files = $finder->in($flagsPath = $this->getAbsolutePath($this->flagsPath));
-        $map   = array();
+
+        $cache = array('flags' => array(), 'defaults' => array());
 
         /** @var $file \Symfony\Component\Finder\SplFileInfo */
         foreach ($files as $file) {
@@ -70,28 +72,24 @@ class FlagCacheWarmer extends CacheWarmer
                 $match = preg_match($this->patterns[$counter], $file->getBasename(), $out);
             } while (!$match && $counter++ < count($this->patterns));
 
-            $locale = $out['locale'];
-            if ($this->isLocaleEnabled($locale)) {
-                $resource = str_replace(realpath($flagsPath).'/', '', $file->getRealPath());
-                if (!isset($this->defaults[$locale])) {
-                    $this->defaults[$locale] = array('file' => $resource, 'locale' => $locale);
-                } elseif (is_string($this->defaults[$locale])) {
-                    $this->defaults[$locale] = array('file' => $this->defaults[$locale], 'locale' => $locale);
-                }
-            }
+            $locale       = $out['locale'];
+            $country      = isset($out['country']) ? strtolower($out['country']) : null;
+            $localeString = $locale.(is_null($country) ? '' : '-'.$country);
 
-            if (isset($out['country']) && $this->isLocaleEnabled($localeString = $locale.'-'.$out['country'])) {
-                $map[$localeString] = array(
-                    'file'    => $resource,
-                    'locale'  => $locale,
-                    'country' => $out['country']
-                );
+            if ($this->isLocaleEnabled($localeString)) {
+                $cache['flags'][$localeString] = new Flag($file->getRealPath(), $locale, $country);
+
+                if (!isset($cache['defaults'][$locale])) {
+                    if (isset($this->defaults[$locale])) {
+                        $cache['defaults'][$locale] = strtolower($this->defaults[$locale]);
+                    } else {
+                        $cache['defaults'][$locale] = $localeString;
+                    }
+                }
             }
         }
 
-        $map['defaults'] = $this->defaults;
-
-        $this->writeCacheFile($cacheDir.DIRECTORY_SEPARATOR.'flags.php', sprintf('<?php return %s;'.PHP_EOL, var_export($map, true)));
+        $this->writeCacheFile($cacheDir.DIRECTORY_SEPARATOR.'flags.php', sprintf('<?php return unserialize(%s);'.PHP_EOL, var_export(serialize($cache), true)));
     }
 
     /**
@@ -122,11 +120,11 @@ class FlagCacheWarmer extends CacheWarmer
             return true;
         }
 
-        if (in_array($locale, $this->enabledLocales)) {
-            return true;
-        }
-
         foreach ($this->enabledLocales as $enabledLocale) {
+            if (0 == strcasecmp($locale, $enabledLocale)) {
+                return true;
+            }
+
             if (strpos($enabledLocale, '*') !== false && preg_match('/'.str_replace('*', '.*', $enabledLocale).'/', $locale)) {
                 return true;
             }
