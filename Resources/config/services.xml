@@ -6,7 +6,8 @@
 
 
     <parameters>
-        <parameter key="server_grove_locale.asset_factory.class">ServerGrove\LocaleBundle\Asset\Factory\AssetFactory</parameter>
+        <parameter key="server_grove_locale.assetic.locale_loader.class">ServerGrove\LocaleBundle\Asset\Factory\Loader\Loader</parameter>
+        <parameter key="server_grove_locale.flag_assetic_resource.class">ServerGrove\LocaleBundle\Asset\Factory\Resource\LocaleCacheResource</parameter>
         <parameter key="server_grove_locale.flag_cache_warmer.class">ServerGrove\LocaleBundle\CacheWarmer\FlagCacheWarmer</parameter>
         <parameter key="server_grove_locale.flag_extension.class">ServerGrove\LocaleBundle\Extension\FlagExtension</parameter>
         <parameter key="server_grove_locale.locale_listener.class">ServerGrove\LocaleBundle\EventListener\LocaleListener</parameter>
@@ -15,10 +16,10 @@
     <services>
         <service id="server_grove_locale.flag.loader" class="%server_grove_locale.flag.loader.class%"/>
 
-        <service id="server_grove_locale.assetic.config_loader" class="ServerGrove\LocaleBundle\Asset\Factory\Loader\Loader" public="false">
+        <service id="server_grove_locale.assetic.locale_loader" class="%server_grove_locale.assetic.locale_loader.class%" public="false">
             <tag name="assetic.formula_loader" alias="locale" />
         </service>
-        <service id="server_grove_locale.flag_assetic_resource" class="ServerGrove\LocaleBundle\Asset\Factory\Resource\LocaleCacheResource">
+        <service id="server_grove_locale.flag_assetic_resource" class="%server_grove_locale.flag_assetic_resource.class%">
             <argument type="service" id="server_grove_locale.flag.loader"/>
             <argument>%server_grove_locale.flags_path%</argument>
             <tag name="assetic.formula_resource" loader="locale" />
