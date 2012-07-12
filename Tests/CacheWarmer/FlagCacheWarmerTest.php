@@ -87,7 +87,7 @@ class FlagCacheWarmerTest extends \PHPUnit_Framework_TestCase
                 ))
             ),
             array(
-                'ServerGroveLocaleBundle1',
+                'ServerGroveLocaleBundle2',
                 'images/',
                 array('/^(?P<locale>[a-z]{2})\.png$/'),
                 array('files'   => array(
@@ -97,8 +97,8 @@ class FlagCacheWarmerTest extends \PHPUnit_Framework_TestCase
                 ), 'flags_path' => ':cacheDir/web/images')
             ),
             array(
-                'ServerGroveLocaleBundle2',
-                ':cacheDir/src/ServerGroveLocaleBundle2/Resources/public/images',
+                'ServerGroveLocaleBundle3',
+                ':cacheDir/src/ServerGroveLocaleBundle3/Resources/public/images',
                 array('/^(?P<locale>[a-z]{2})\.png$/', '/^(?P<locale>[a-z]{2})\-(?P<country>[A-Z]{2})\.png$/i'),
                 array(
                     'files' => array(
