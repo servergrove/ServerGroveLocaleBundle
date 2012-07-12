@@ -9,13 +9,15 @@
     ],
     "require": {
         "kriswallsmith/assetic": ">=1.0,<1.1",
-        "symfony/framework-bundle": ">=2.0,<2.1",
+        "symfony/config": ">=2.0,<2.1",
+        "symfony/dependency-injection": ">=2.0,<2.1",
         "symfony/finder": ">=2.0,<2.1",
-        "symfony/twig-bridge": ">=2.0,<2.1",
-        "symfony/console": ">=2.0,<2.1"
+        "symfony/http-kernel": ">=2.0,<2.1",
+        "twig/twig": ">=1.4,<1.9"
     },
-
     "require-dev": {
-        "symfony/filesystem": "dev-master"
+        "symfony/filesystem": ">=2.0,<2.1",
+        "symfony/twig-bridge": ">=2.0,<2.1",
+        "symfony/routing": ">=2.0,<2.1"
     }
 }

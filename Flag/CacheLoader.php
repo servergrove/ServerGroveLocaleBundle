@@ -19,6 +19,9 @@ class CacheLoader implements LoaderInterface
     /** @var array */
     private $flags;
 
+    /** @var array */
+    private $defaults;
+
     /**
      * @param string $cacheDir
      */
@@ -39,16 +42,29 @@ class CacheLoader implements LoaderInterface
     }
 
     /**
+     * @return array
+     */
+    public function getDefaults()
+    {
+        $this->load();
+
+        return $this->defaults;
+    }
+
+    /**
      * @param string $locale
      */
     public function forceDefault($locale)
     {
         $this->load();
 
-        if (isset($this->flags[$locale])) {
-            $this->flags['defaults'][$this->flags[$locale]['locale']]['file'] = $this->flags[$locale]['file'];
+        foreach ($this->flags as $flag) {
+            /** @var $flag Flag */
+            if (0 == strcasecmp($locale, $flag->getLocaleString())) {
+                $this->defaults[$flag->getLocale()] = $flag->getLocaleString();
 
-            return true;
+                return true;
+            }
         }
 
         return false;
@@ -57,7 +73,10 @@ class CacheLoader implements LoaderInterface
     private function load()
     {
         if (!$this->loaded && is_readable($cache = $this->cacheDir.DIRECTORY_SEPARATOR.'flags.php')) {
-            $this->flags = require $cache;
+            $cache = require $cache;
+
+            $this->flags    = $cache['flags'];
+            $this->defaults = $cache['defaults'];
 
             $this->loaded = true;
         }

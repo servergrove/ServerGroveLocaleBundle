@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block path_flag %}
-{{ url_asset_flag(path(route, route_params|default({})), asset, { attrs: attrs }) }}
+{{- url_asset_flag(path(route, route_params|default({})), asset, { attrs: attrs }) -}}
 {% endblock %}
 
 {% block path_flags %}
@@ -34,7 +34,7 @@
 
 {% block domains_flags %}
 {% for asset in flags %}
-{% if asset is assetvisible or not hideCurrent %}
+{% if not hideCurrent or asset is assetvisible %}
 {{ url_asset_flag(asset_url(asset), asset, { attrs: attrs }) }}
 {% endif %}
 {% endfor %}
