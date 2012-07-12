@@ -100,11 +100,16 @@ class FlagCacheWarmerTest extends \PHPUnit_Framework_TestCase
                 'ServerGroveLocaleBundle2',
                 ':cacheDir/src/ServerGroveLocaleBundle2/Resources/public/images',
                 array('/^(?P<locale>[a-z]{2})\.png$/', '/^(?P<locale>[a-z]{2})\-(?P<country>[A-Z]{2})\.png$/i'),
-                array('files' => array(
-                    'es' => array('countries'=> array('ES', 'AR', 'MX')),
-                    'en' => array('countries'=> array('US', 'UK', 'AU')),
-                    'pt' => array('countries'=> array('BR', 'PT'))
-                ))
+                array(
+                    'files' => array(
+                        'es' => array('countries'=> array('ES', 'AR', 'MX')),
+                        'en' => array('countries'=> array('US', 'UK', 'AU')),
+                        'pt' => array('countries'=> array('BR', 'PT'))
+                    ),
+                    'defaults' => array(
+                        'es' => 'AR'
+                    )
+                )
             )
         );
     }
