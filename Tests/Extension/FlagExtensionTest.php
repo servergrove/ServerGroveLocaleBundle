@@ -123,6 +123,20 @@ class FlagExtensionTest extends TestCase
 
         $content = $extension->renderPathFlag('my_route', 'en', array(), 'GB');
         $this->assertEquals('<a href="/"><img src="/images/locale/en-GB.png"/></a>', $content);
+
+        $options = array(
+            'attrs' => array(
+                'alt'      => array(
+                    'en-gb'   => 'UE alt'
+                ), 'title' => 'My title'
+            )
+        );
+
+        $content = $extension->renderPathFlag('my_route', 'en', array(), null, $options);
+        $this->assertEquals('<a href="/"><img src="/images/locale/en.png" title="My title"/></a>', $content);
+
+        $content = $extension->renderPathFlag('my_route', 'en', array(), 'GB', $options);
+        $this->assertEquals('<a href="/"><img src="/images/locale/en-GB.png" alt="UE alt" title="My title"/></a>', $content);
     }
 
     /**
@@ -172,7 +186,6 @@ class FlagExtensionTest extends TestCase
 
         $content = $extension->renderUrlFlag('http://servergrove.eu', 'en', 'GB', $options);
         $this->assertEquals('<a href="http://servergrove.eu"><img src="/images/locale/en-GB.png" alt="UE alt" title="My title"/></a>', $content);
-
     }
 
     public function testRenderDomainFlag()
