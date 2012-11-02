@@ -75,7 +75,6 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('enabled')->defaultTrue()->end()
 
                         ->arrayNode('patterns')
-                            ->addDefaultsIfNotSet()
                             ->prototype('scalar')
                                 ->validate()
                                     ->ifString(function($pattern) {
@@ -142,7 +141,6 @@ class Configuration implements ConfigurationInterface
                         ->end()
 
                         ->arrayNode('arguments')
-                            ->addDefaultsIfNotSet()
                             ->defaultValue(array("%kernel.cache_dir%"))
                             ->prototype('variable')
                                 ->treatNullLike(array())
