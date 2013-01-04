@@ -8,7 +8,7 @@ use Assetic\Factory\Resource\FileResource;
 use ServerGrove\LocaleBundle\Asset\Factory\Resource\LocaleCacheResource;
 
 /**
- * Class
+ * Class Loader
  *
  * @author Ismael Ambrosi<ismael@servergrove.com>
  */
