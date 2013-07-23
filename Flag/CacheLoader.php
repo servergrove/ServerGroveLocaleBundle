@@ -53,6 +53,8 @@ class CacheLoader implements LoaderInterface
 
     /**
      * @param string $locale
+     *
+     * @return bool
      */
     public function forceDefault($locale)
     {
