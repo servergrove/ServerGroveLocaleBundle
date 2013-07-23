@@ -378,6 +378,7 @@ class FlagExtension extends \Twig_Extension
     /**
      * @param string $locale
      * @param string $country
+     * @param string $separator
      *
      * @return string
      */
@@ -388,6 +389,7 @@ class FlagExtension extends \Twig_Extension
 
     /**
      * @param string $assetName
+     * @param bool   $map
      *
      * @return string
      */
