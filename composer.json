@@ -1,5 +1,7 @@
 {
     "name": "servergrove/ServerGroveLocaleBundle",
+    "type": "symfony-bundle",
+    "keywords": ["locale", "i18n"],
     "description": "This bundle provides a set of Twig functions to display flags in different ways",
     "license": "MIT",
     "authors": [
