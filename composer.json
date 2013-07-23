@@ -4,6 +4,10 @@
     "license": "MIT",
     "authors": [
         {
+            "name": "Pablo Godel",
+            "email": "pablo@servergrove.com"
+        },
+        {
             "name": "Ismael Ambrosi",
             "email": "ismael@servergrove.com"
         }
